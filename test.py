@@ -1,102 +1,50 @@
-import http.client
-import json
-from datetime import datetime, timedelta
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import time
-import requests
-from bs4 import BeautifulSoup
+import yfinance as yf
+import random
 
-# SMTP ayarlarını buraya al
-email = 'omerddduran@gmail.com'
-password = 'qbfl udxd kjya tpiv'
+# Hisse listesi
+hisseler = ['AAPL', 'MSFT', 'AMZN', 'GOOGL', 'FB', 'TSLA', 'BRK.A', 'BRK.B', 'JPM', 'JNJ', 'V', 'PG', 'NVDA', 'MA', 'HD', 'DIS', 'UNH', 'PYPL', 'BAC', 'CMCSA', 'XOM', 'INTC', 'ADBE', 'NFLX', 'T', 'CRM', 'ABT', 'CSCO', 'VZ', 'KO', 'MRK', 'PFE', 'PEP', 'WMT', 'CVX', 'MCD', 'TMO', 'WFC', 'ABBV', 'ORCL', 'AMGN', 'NKE', 'ACN', 'IBM', 'QCOM', 'TXN', 'COST', 'LLY', 'HON', 'MDT', 'AVGO', 'DHR', 'NEE', 'UPS', 'LIN', 'SBUX', 'LOW', 'UNP', 'BA', 'MO', 'MMM', 'RTX', 'GS', 'BDX', 'CAT', 'ADP', 'LMT', 'CVS', 'CI', 'DE', 'ANTM', 'SO', 'BMY', 'USB', 'AXP', 'GILD', 'MS', 'ISRG', 'CHTR', 'RTX', 'PLD', 'AEP', 'TGT', 'D', 'DUK', 'BKNG', 'SPGI', 'VRTX', 'ZTS', 'CME', 'COF', 'CSX', 'CCI', 'REGN', 'CL']
 
-def send_email(subject, body):
-    # E-posta gönderme işlemi
-    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    server.login(email, password)
+# Rastgele bir hisse seçme
+secilen_hisse = random.choice(hisse_listesi)
 
-    msg = MIMEMultipart()
-    msg['From'] = email
-    msg['To'] = 'trigger@applet.ifttt.com'
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(body, 'plain'))
-
-    server.send_message(msg)
-    server.quit()
-
-def get_gold_price_and_send_email():
-    # Altın verilerini alma işlemi
-    conn = http.client.HTTPSConnection("api.collectapi.com")
-    headers = {
-        'content-type': "application/json",
-        'authorization': "apikey 1XxDAz4EtnKZ099rPKM8Jj:2se49tU9ttxzlhy1KGI5sW"
-    }
-    conn.request("GET", "/economy/goldPrice", headers=headers)
-    res = conn.getresponse()
-    data = res.read().decode("utf-8")
-    parsed_data = json.loads(data)
-
-    # Bugünün tarihini al ve gün ve ayı ayrı değişkenlere at
-    today_date = datetime.now()
-    day = today_date.strftime("%d")
-    month = today_date.strftime("%B")
-    turkish_month = {
-        "January": "Ocak",
-        "February": "Şubat",
-        "March": "Mart",
-        "April": "Nisan",
-        "May": "Mayıs",
-        "June": "Haziran",
-        "July": "Temmuz",
-        "August": "Ağustos",
-        "September": "Eylül",
-        "October": "Ekim",
-        "November": "Kasım",
-        "December": "Aralık"
-    }[month]
-
-    # E-posta oluşturma işlemi
-    subject = f"🔴 Altın Fiyatları {day} {turkish_month}"
-    body = "🔴 Altın Fiyatları:\n\n"
-    for item in parsed_data["result"]:
-        if item["name"] in ["Gram Altın", "ONS Altın", "Çeyrek Altın"]:
-            body += f"💰 {item['name']}: Alış - {item['buying']}, Satış - {item['selling']}\n"
-
-    send_email(subject, body)
-
-def send_bist_open():
-  target_bist = "https://www.google.com/finance/quote/XU100:INDEXIST?hl=tr"
-  page = requests.get(target_bist)
-  soup = BeautifulSoup(page.content, "html.parser")
-  item_bist = soup.find("div", class_="YMlKec fxKbKc").text   
-  subject = (f"{datetime.today()} BIST 100 Açılış")
-  body = (f"{datetime.today()} tarihinde BIST 100 endeksi: {item_bist} olarak açıldı.")
-  print(body)
-  send_email(subject, body)
-  
-
-# İlk çalıştırma
-get_gold_price_and_send_email()
-
-
-
-# Haftaiçi saat 13:00'da kontrol ve e-posta gönderme
-while True:
-    # Şu anki zamanı al
-    now = datetime.now()
-    # Haftaiçi ise ve saat 13:00 olduğunda çalıştır
-    if now.weekday() < 5 and now.hour == 13 and now.minute == 0:
-        get_gold_price_and_send_email()
-        # iki dakika sonra tekrar kontrol etmek için bekleyin
-        time.sleep(120)
-
-    if now.weekday() < 5 and now.hour == 19 and now.minute == 7:
-        send_bist_open()
-        time.sleep(60)
-
+# Para birimini belirleme fonksiyonu
+def para_birimi(hisse_kodu):
+    if hisse_kodu.endswith('.IS'):
+        return 'TRY'
     else:
-        # 1 saniye bekleyin ve tekrar kontrol edin
-        time.sleep(1)
+        return 'USD'
+
+# Seçilen hisse için verileri al
+hisse = yf.Ticker(secilen_hisse)
+hisse_bilgileri = hisse.info
+
+# Fiyat ve hacim değerlerini düzenleyen fonksiyon
+def duzenle(deger, para):
+    if deger != 0 and isinstance(deger, int):
+        return "{:,.0f} {}".format(deger, para).replace(",", ".")
+    elif deger != 0 and isinstance(deger, float):
+        return "{:,.2f} {}".format(deger, para).replace(",", ".")
+    else:
+        return ''
+
+# Bilgileri yazdırma
+print("📈 {} hisse senedinin güncel ve uzun dönemli performansı şu şekildedir:".format(hisse_bilgileri['shortName']))
+print("\nÖnceki Kapanış: {}".format(duzenle(hisse_bilgileri.get('previousClose', ''), para_birimi(secilen_hisse))))
+print("Açılış Fiyatı: {}".format(duzenle(hisse_bilgileri.get('open', ''), para_birimi(secilen_hisse))))
+print("Günlük En Düşük Değer: {}".format(duzenle(hisse_bilgileri.get('dayLow', ''), para_birimi(secilen_hisse))))
+print("Günlük En Yüksek Değer: {}".format(duzenle(hisse_bilgileri.get('dayHigh', ''), para_birimi(secilen_hisse))))
+
+# Eğer 'regularMarketPrice' bilgisi mevcutsa, kullan. Değilse 'open' ve 'dayHigh' değerlerinden ortalama al.
+anlik_fiyat = hisse_bilgileri.get('regularMarketPrice', (hisse_bilgileri.get('open', 0) + hisse_bilgileri.get('dayHigh', 0)) / 2)
+print("Anlık Fiyat: {}".format(duzenle(anlik_fiyat, para_birimi(secilen_hisse)) if anlik_fiyat != 0 else ''))
+
+print("52 Haftalık En Düşük Değer: {}".format(duzenle(hisse_bilgileri.get('fiftyTwoWeekLow', ''), para_birimi(secilen_hisse))))
+print("52 Haftalık En Yüksek Değer: {}".format(duzenle(hisse_bilgileri.get('fiftyTwoWeekHigh', ''), para_birimi(secilen_hisse))))
+print("Günlük İşlem Hacmi: {}".format(duzenle(hisse_bilgileri.get('volume', ''), 'hisse')))
+print("Ortalama Günlük İşlem Hacmi (Son 10 Gün): {}".format(duzenle(hisse_bilgileri.get('averageDailyVolume10Day', ''), 'hisse')))
+son_ceyrek_buyume_orani = hisse_bilgileri.get('quarterlyEarningsGrowth', '')
+if son_ceyrek_buyume_orani != '':
+    print("Son Çeyrek Dönem Büyüme Oranı: %{:.1f}".format(son_ceyrek_buyume_orani))
+print("Net Gelir: {}".format(duzenle(hisse_bilgileri.get('netIncomeToCommon', ''), para_birimi(secilen_hisse))))
+print("Brüt Kar Marjı: %{:.3f}".format(hisse_bilgileri.get('grossMargins', 0) * 100))
+print("Piyasa Değeri: {}".format(duzenle(hisse_bilgileri.get('marketCap', ''), para_birimi(secilen_hisse))))

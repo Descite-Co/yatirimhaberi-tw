@@ -5,11 +5,27 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import time
-import datetime
 import requests
 from bs4 import BeautifulSoup
 
+# SMTP ayarlarını buraya al
+email = 'omerddduran@gmail.com'
+password = 'qbfl udxd kjya tpiv'
 
+def send_email(subject, body):
+    # E-posta gönderme işlemi
+    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+    server.login(email, password)
+
+    msg = MIMEMultipart()
+    msg['From'] = email
+    msg['To'] = 'trigger@applet.ifttt.com'
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    server.send_message(msg)
+    server.quit()
 
 def get_gold_price_and_send_email():
     # Altın verilerini alma işlemi
@@ -49,33 +65,23 @@ def get_gold_price_and_send_email():
         if item["name"] in ["Gram Altın", "ONS Altın", "Çeyrek Altın"]:
             body += f"💰 {item['name']}: Alış - {item['buying']}, Satış - {item['selling']}\n"
 
-    # Gmail hesabınızı ve şifrenizi girin
-    email = 'omerddduran@gmail.com'
-    password = 'qbfl udxd kjya tpiv'
+    send_email(subject, body)
 
-    # E-posta gönderme işlemi
-    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    server.login(email, password)
-
-    msg = MIMEMultipart()
-    msg['From'] = email
-    msg['To'] = 'trigger@applet.ifttt.com'
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(body, 'plain'))
-
-    server.send_message(msg)
-    server.quit()
+def send_bist_open():
+  target_bist = "https://www.google.com/finance/quote/XU100:INDEXIST?hl=tr"
+  page = requests.get(target_bist)
+  soup = BeautifulSoup(page.content, "html.parser")
+  item_bist = soup.find("div", class_="YMlKec fxKbKc").text   
+  subject = (f"{datetime.today()} BIST 100 Açılış")
+  body = (f"{datetime.today()} tarihinde BIST 100 endeksi: {item_bist} olarak açıldı.")
+  print(body)
+  send_email(subject, body)
+  
 
 # İlk çalıştırma
 get_gold_price_and_send_email()
+send_bist_open()
 
-def send_bist_open():
-    target_bist = "https://www.google.com/finance/quote/XU100:INDEXIST?hl=tr"
-    page = requests.get(target_bist)
-    soup = BeautifulSoup(page.content, "html.parser")
-    item_bist = soup.find("div", class_="YMlKec fxKbKc").text   
-    print(f"{datetime.date.today()} tarihinde BIST 100 endeksi: {item_bist} olarak açıldı.")
 
 # Haftaiçi saat 13:00'da kontrol ve e-posta gönderme
 while True:
@@ -86,11 +92,11 @@ while True:
         get_gold_price_and_send_email()
         # iki dakika sonra tekrar kontrol etmek için bekleyin
         time.sleep(120)
-    
-    if now.weekday() < 5 and now.hour == 17 and now.minute == 16:
+
+    if now.weekday() < 5 and now.hour == 19 and now.minute == 7:
         send_bist_open()
         time.sleep(60)
-        
+
     else:
         # 1 saniye bekleyin ve tekrar kontrol edin
         time.sleep(1)
