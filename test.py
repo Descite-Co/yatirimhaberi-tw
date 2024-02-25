@@ -72,7 +72,10 @@ def send_bist_open():
   page = requests.get(target_bist)
   soup = BeautifulSoup(page.content, "html.parser")
   item_bist = soup.find("div", class_="YMlKec fxKbKc").text   
-  print(f"{datetime.date.today()} tarihinde BIST 100 endeksi: {item_bist} olarak açıldı.")
+  subject = (f"{datetime.today()} BIST 100 Açılış")
+  body = (f"{datetime.today()} tarihinde BIST 100 endeksi: {item_bist} olarak açıldı.")
+  print(body)
+  send_email(subject, body)
   
 
 # İlk çalıştırma
@@ -90,7 +93,7 @@ while True:
         # iki dakika sonra tekrar kontrol etmek için bekleyin
         time.sleep(120)
 
-    if now.weekday() < 5 and now.hour == 17 and now.minute == 16:
+    if now.weekday() < 5 and now.hour == 19 and now.minute == 7:
         send_bist_open()
         time.sleep(60)
 
