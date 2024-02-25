@@ -68,14 +68,33 @@ def get_gold_price_and_send_email():
     send_email(subject, body)
 
 def send_bist_open():
-  target_bist = "https://www.google.com/finance/quote/XU100:INDEXIST?hl=tr"
-  page = requests.get(target_bist)
-  soup = BeautifulSoup(page.content, "html.parser")
-  item_bist = soup.find("div", class_="YMlKec fxKbKc").text   
-  subject = (f"{datetime.today()} BIST 100 Açılış")
-  body = (f"{datetime.today()} tarihinde BIST 100 endeksi: {item_bist} olarak açıldı.")
-  print(body)
-  send_email(subject, body)
+    today_date = datetime.now()
+    day = today_date.strftime("%d")
+    month = today_date.strftime("%B")
+    turkish_month = {
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }[month]
+    target_bist = "https://www.google.com/finance/quote/XU100:INDEXIST?hl=tr"
+    page = requests.get(target_bist)
+    soup = BeautifulSoup(page.content, "html.parser")
+    item_bist = soup.find("div", class_="YMlKec fxKbKc").text
+    percent_bist = soup.find("div", class_="JwB6zf").text   
+    subject = (f"{day} {turkish_month} BIST100 Açılış Verileri 👇")
+    body = f"""🔴 {day} {turkish_month} BIST100 Açılış Verileri 👇 \n
+            Fiyat: {item_bist} \n
+            Yüzde: {percent_bist} \n"""
+    send_email(subject, body)
   
 
 # İlk çalıştırma
