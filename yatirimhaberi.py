@@ -112,7 +112,7 @@ while True:
         # iki dakika sonra tekrar kontrol etmek için bekleyin
         time.sleep(120)
 
-    if now.weekday() < 5 and now.hour == 19 and now.minute == 7:
+    if now.weekday() < 5 and now.hour == 10 and now.minute == 16:
         send_bist_open()
         time.sleep(60)
 
