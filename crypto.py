@@ -21,6 +21,17 @@ def format_market_cap(market_cap):
     else:
         return f"${market_cap / 1_000_000_000_000:.2f} Trilyon"
 
+def print_crypto_data(cryptos):
+    print("🚀 Anlık Kripto Verileri 🚀")
+    for crypto, urls in cryptos.items():
+        price = get_crypto_price(urls[0])
+        market_cap = get_crypto_price(urls[1])
+        if price is not None and market_cap is not None:
+            print(f"\n🌟 #{crypto} Fiyatı: ${format_price(price)}")
+            print(f"💰 #{crypto} Piyasa Değeri: {format_market_cap(float(market_cap))}")
+        else:
+            print(f"\n🚫 {crypto} verileri alınamadı.")
+
 cryptos = {
     "BTC": ["https://cryptoprices.cc/BTC/", "https://cryptoprices.cc/BTC/MCAP/"],
     "ETH": ["https://cryptoprices.cc/ETH/", "https://cryptoprices.cc/ETH/MCAP/"],
@@ -29,7 +40,4 @@ cryptos = {
     "XRP": ["https://cryptoprices.cc/XRP/", "https://cryptoprices.cc/XRP/MCAP/"]
 }
 
-print("🚀 Anlık Kripto Verileri 🚀")
-for crypto, urls in cryptos.items():
-    print(f"\n🌟 #{crypto} Fiyatı: ${format_price(get_crypto_price(urls[0]))}")
-    print(f"💰 #{crypto} Piyasa Değeri: {format_market_cap(float(get_crypto_price(urls[1])))}")
+print_crypto_data(cryptos)
