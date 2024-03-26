@@ -10,6 +10,8 @@ from bs4 import BeautifulSoup
 import yfinance as yf
 import random
 
+# 
+
 # SMTP ayarlarını buraya al
 email = 'omerddduran@gmail.com'
 password = 'qbfl udxd kjya tpiv'
@@ -169,26 +171,26 @@ def bist_by_time():
 # İlk çalıştırma
 #get_gold_price_and_send_email()
 #send_bist_open()
-#print_crypto_data(cryptos)
-bist_by_time()
+print_crypto_data(cryptos)   
+#bist_by_time()
 
-# Haftaiçi saat 13:00'da kontrol ve e-posta gönderme
+
 while True:
-    # Şu anki zamanı al
-    now = datetime.now()
 
+    now = datetime.now()
+    
+    #BİST HER SABAH BİST 100 AÇILIŞININ PAYLAŞIR
     if now.weekday() < 5 and now.hour == 10 and now.minute == 16:
         send_bist_open()
         time.sleep(120)
-    
+
+    #
     if now.weekday() < 5 and now.hour == 11 and now.minute == 00:
         bist_by_time()
         time.sleep(120)
     
-    # Haftaiçi ise ve saat 13:00 olduğunda çalıştır
     if now.weekday() < 5 and now.hour == 13 and now.minute == 0:
         get_gold_price_and_send_email()
-        # iki dakika sonra tekrar kontrol etmek için bekleyin
         time.sleep(120)
     
     if now.weekday() < 5 and now.hour == 14 and now.minute == 00:
@@ -199,6 +201,13 @@ while True:
         bist_by_time()
         time.sleep(120)
 
+    if now.weekday() < 5 and now.hour == 11 and now.minute == 00:
+        print_crypto_data(cryptos)
+        time.sleep(120)
+    
+    if now.weekday() < 5 and now.hour == 17 and now.minute == 15:
+        print_crypto_data(cryptos)
+        time.sleep(120)
+
     else:
-        # 1 saniye bekleyin ve tekrar kontrol edin
         time.sleep(1)
