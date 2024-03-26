@@ -16,6 +16,28 @@ import random
 email = 'omerddduran@gmail.com'
 password = 'qbfl udxd kjya tpiv'
 
+def get_data_sil(url):
+    headers = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
+def get_data_cur(url):
+    headers = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
 cryptos = {
     "BTC": ["https://cryptoprices.cc/BTC/", "https://cryptoprices.cc/BTC/MCAP/"],
     "ETH": ["https://cryptoprices.cc/ETH/", "https://cryptoprices.cc/ETH/MCAP/"],
@@ -23,6 +45,26 @@ cryptos = {
     "SOL": ["https://cryptoprices.cc/SOL/", "https://cryptoprices.cc/SOL/MCAP/"],
     "XRP": ["https://cryptoprices.cc/XRP/", "https://cryptoprices.cc/XRP/MCAP/"]
 }
+
+def currency_send():
+    # Döviz kurlarını al
+    json_data = get_data_cur('https://api.genelpara.com/embed/para-birimleri.json')
+
+    # E-posta için içerik oluştur
+    if json_data:
+        email_body = "🌍 Döviz Kurları 🌍\n\n"
+        for currency in ['USD', 'EUR', 'GBP']:
+            data = json_data.get(currency)
+            if data:
+                email_body += f'#{currency}:\nFiyat: {data["satis"]}\nDeğişim: {data["degisim"]}%\n\n'
+            else:
+                email_body += f'{currency} verisi bulunamadı.\n\n'
+
+        # E-posta gönder
+        send_email("Güncel Döviz Kurları", email_body)
+    else:
+        print("Döviz kurları alınamadı.")
+
 
 def send_email(subject, body):
     # E-posta gönderme işlemi
@@ -121,6 +163,24 @@ def get_crypto_price(url):
 def format_price(price):
     return "{:,.2f}".format(float(price))
 
+def silver():
+    # Gümüş verilerini al
+    json_data = get_data_sil('https://api.genelpara.com/embed/para-birimleri.json')
+
+    # E-posta için içerik oluştur
+    if json_data:
+        data = json_data.get('GAG')
+        if data:
+            email_body = "🔴 #Gümüş:\n"
+            email_body += f'Fiyat: ₺{data["satis"]}\nDeğişim: {data["degisim"]}%\n'
+
+            # E-posta gönder
+            send_email("Güncel Gümüş Fiyatları", email_body)
+        else:
+            print('Gümüş verisi bulunamadı.')
+    else:
+        print("Veri alınamadı.")
+
 def format_market_cap(market_cap):
     if market_cap < 1_000_000:
         return f"${market_cap:,.0f}"
@@ -154,9 +214,9 @@ def bist_by_time():
     day_5_change_percent = (((today - day_5_close) / today) * 100).round(1)
     month_3_close = chosen_stock_info.history(period='max').iloc[-180]['Open']
     month_3_change_percent = (((today - month_3_close) / today) * 100).round(1)
-    
+
     body = f"""🔴 #{chosen_stock} Hissesinin Zamana Bağlı Performansı 👇
-          
+
 ⬛ Güncel Fiyat: {today}
 ⬛ 5 Günlük Fiyat Değişimi: %{day_5_change_percent}
 ⬛ 1 Aylık Fiyat Değişimi: %{month_1_change_percent}
@@ -165,7 +225,7 @@ def bist_by_time():
 #yatırım #borsa #hisse #hisseanaliz #bist #bist100 #bist30 #borsaistanbul
           """
     subject = ("bist_by_time")
-    
+
     send_email(subject, body)
 
 # İlk çalıştırma
@@ -173,41 +233,54 @@ def bist_by_time():
 #send_bist_open()
 print_crypto_data(cryptos)   
 #bist_by_time()
-
+#currency_send()
+#silver()
 
 while True:
 
     now = datetime.now()
-    
-    #BİST HER SABAH BİST 100 AÇILIŞININ PAYLAŞIR
-    if now.weekday() < 5 and now.hour == 10 and now.minute == 16:
-        send_bist_open()
+
+    # Hafta içi her gün saat 12 ve 16da gümüş fiyatı paylaşılıcak
+    if now.weekday() < 5 and now.hour == 12 and now.minute == 00:
+        silver()
         time.sleep(120)
 
-    #
-    if now.weekday() < 5 and now.hour == 11 and now.minute == 00:
-        bist_by_time()
+    if now.weekday() < 5 and now.hour == 16 and now.minute == 00:
+        silver()
         time.sleep(120)
-    
-    if now.weekday() < 5 and now.hour == 13 and now.minute == 0:
+
+    # Her gün saat 10 ve 19da en büyük kripto paraların verilieri paylaşılıcak.    
+    if now.weekday() < 7 and now.hour == 10 and now.minute == 00:
+        print_crypto_data(cryptos)
+        time.sleep(120)
+
+    if now.weekday() < 7 and now.hour == 19 and now.minute == 00:
+        print_crypto_data(cryptos)
+        time.sleep(120)
+
+    # Her gün saat 11 ve 17da döviz paylaşılıcak.    
+    if now.weekday() < 5 and now.hour == 11 and now.minute == 00:
+        currency_send()
+        time.sleep(120)
+
+    if now.weekday() < 5 and now.hour == 17 and now.minute == 00:
+        currency_send()
+        time.sleep(120)     
+
+    # Her gün saat 11.30 ve 14da altın verilieri paylaşılıcak.    
+    if now.weekday() < 5 and now.hour == 11 and now.minute == 30:
         get_gold_price_and_send_email()
         time.sleep(120)
-    
-    if now.weekday() < 5 and now.hour == 14 and now.minute == 00:
-        bist_by_time()
-        time.sleep(120)
-    
-    if now.weekday() < 5 and now.hour == 17 and now.minute == 00:
-        bist_by_time()
-        time.sleep(120)
 
-    if now.weekday() < 5 and now.hour == 11 and now.minute == 00:
-        print_crypto_data(cryptos)
-        time.sleep(120)
-    
-    if now.weekday() < 5 and now.hour == 17 and now.minute == 15:
-        print_crypto_data(cryptos)
-        time.sleep(120)
+    if now.weekday() < 5 and now.hour == 14 and now.minute == 00:
+        get_gold_price_and_send_email()
+        time.sleep(120) 
+                   
+
+
+
+
+
 
     else:
         time.sleep(1)
