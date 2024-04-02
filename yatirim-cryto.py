@@ -10,12 +10,61 @@ from bs4 import BeautifulSoup
 import yfinance as yf
 import random
 
-# 
-
 # SMTP ayarlarını buraya al
 email = 'omerddduran@gmail.com'
 password = 'qbfl udxd kjya tpiv'
 
+
+# Hisse listesi
+hisse_listesi = ['AAPL', 'MSFT', 'AMZN', 'GOOGL', 'FB', 'TSLA', 'BRK.A', 'BRK.B', 'JPM', 'JNJ', 'V', 'PG', 'NVDA', 'MA', 'HD', 'DIS', 'UNH', 'PYPL', 'BAC', 'CMCSA', 'XOM', 'INTC', 'ADBE', 'NFLX', 'T', 'CRM', 'ABT', 'CSCO', 'VZ', 'KO', 'MRK', 'PFE', 'PEP', 'WMT', 'CVX', 'MCD', 'TMO', 'WFC', 'ABBV', 'ORCL', 'AMGN', 'NKE', 'ACN', 'IBM', 'QCOM', 'TXN', 'COST', 'LLY', 'HON', 'MDT', 'AVGO', 'DHR', 'NEE', 'UPS', 'LIN', 'SBUX', 'LOW', 'UNP', 'BA', 'MO', 'MMM', 'RTX', 'GS', 'BDX', 'CAT', 'ADP', 'LMT', 'CVS', 'CI', 'DE', 'ANTM', 'SO', 'BMY', 'USB', 'AXP', 'GILD', 'MS', 'ISRG', 'CHTR', 'RTX', 'PLD', 'AEP', 'TGT', 'D', 'DUK', 'BKNG', 'SPGI', 'VRTX', 'ZTS', 'CME', 'COF', 'CSX', 'CCI', 'REGN', 'CL']
+
+# Rastgeele bir hisse seçme
+secilen_hisse = random.choice(hisse_listesi)
+
+# Para birimini belirleme fonksiyonu
+def para_birimi(hisse_kodu):
+    if hisse_kodu.endswith('.IS'):
+        return 'TRY'
+    else:
+        return 'USD'
+
+# Seçilen hisse için verileri al
+hisse = yf.Ticker(secilen_hisse)
+hisse_bilgileri = hisse.info
+
+# Fiyat ve hacim değerlerini düzenleyen fonksiyon
+def duzenle(deger, para):
+    if deger != 0 and isinstance(deger, int):
+        return "{:,.0f} {}".format(deger, para).replace(",", ".")
+    elif deger != 0 and isinstance(deger, float):
+        return "{:,.2f} {}".format(deger, para).replace(",", ".")
+    else:
+        return ''
+
+def random_stock():
+
+    email_body = f"📈 {hisse_bilgileri['shortName']} hisse senedinin güncel ve uzun dönemli performansı şu şekildedir:\n\n"
+    email_body += f"Önceki Kapanış: {duzenle(hisse_bilgileri.get('previousClose', 0))}\n"
+    email_body += f"Açılış Fiyatı: {duzenle(hisse_bilgileri.get('open', 0))}\n"
+    email_body += f"Günlük En Düşük Değer: {duzenle(hisse_bilgileri.get('dayLow', 0))}\n"
+    email_body += f"Günlük En Yüksek Değer: {duzenle(hisse_bilgileri.get('dayHigh', 0))}\n"
+    anlik_fiyat = hisse_bilgileri.get('regularMarketPrice', (hisse_bilgileri.get('open', 0) + hisse_bilgileri.get('dayHigh', 0)) / 2)
+    email_body += f"Anlık Fiyat: {duzenle(anlik_fiyat if anlik_fiyat != 0 else '')}\n"
+    email_body += f"52 Haftalık En Düşük Değer: {duzenle(hisse_bilgileri.get('fiftyTwoWeekLow', 0))}\n"
+    email_body += f"52 Haftalık En Yüksek Değer: {duzenle(hisse_bilgileri.get('fiftyTwoWeekHigh', 0))}\n"
+    email_body += f"Günlük İşlem Hacmi: {duzenle(hisse_bilgileri.get('volume', 'hisse'))}\n"
+    email_body += f"Ortalama Günlük İşlem Hacmi (Son 10 Gün): {duzenle(hisse_bilgileri.get('averageDailyVolume10Day', 'hisse'))}\n"
+    son_ceyrek_buyume_orani = hisse_bilgileri.get('quarterlyEarningsGrowth', '')
+    if son_ceyrek_buyume_orani != '':
+        email_body += f"Son Çeyrek Dönem Büyüme Oranı: %{son_ceyrek_buyume_orani:.1f}\n"
+    email_body += f"Net Gelir: {duzenle(hisse_bilgileri.get('netIncomeToCommon', 0))}\n"
+    email_body += f"Brüt Kar Marjı: %{hisse_bilgileri.get('grossMargins', 0) * 100:.3f}\n"
+    email_body += f"Piyasa Değeri: {duzenle(hisse_bilgileri.get('marketCap', 0))}\n"
+
+    # E-posta gönder
+    subject = f"{hisse_bilgileri['shortName']} Hissesi Performans Raporu"
+    send_email(subject, email_body)
+    
 def get_data_sil(url):
     headers = {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -231,7 +280,7 @@ def bist_by_time():
 # İlk çalıştırma
 #get_gold_price_and_send_email()
 #send_bist_open()
-print_crypto_data(cryptos)   
+#print_crypto_data(cryptos)   
 #bist_by_time()
 #currency_send()
 #silver()
@@ -274,6 +323,11 @@ while True:
 
     if now.weekday() < 5 and now.hour == 14 and now.minute == 00:
         get_gold_price_and_send_email()
+        time.sleep(120) 
+
+    # Bist Açılış Fiyatı    
+    if now.weekday() < 5 and now.hour == 10 and now.minute == 15:
+        send_bist_open()
         time.sleep(120) 
                    
 
