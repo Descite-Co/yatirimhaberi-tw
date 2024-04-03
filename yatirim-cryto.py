@@ -9,6 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 import yfinance as yf
 import random
+import matplotlib.pyplot as plt
 
 # SMTP ayarlarını buraya al
 email = 'omerddduran@gmail.com'
@@ -188,7 +189,7 @@ def send_bist_open():
         "November": "Kasım",
         "December": "Aralık"
     }[month]
-    xu100 = yf.Ticker('XU100.IS')
+    xu100 = yf.Ticker('XU100.IS')    
     xu100_open = xu100.info.get('open', '')
     xu100_last_close = xu100.info.get('previousClose', '')
     xu100_change = (((xu100_open - xu100_last_close) / xu100_last_close) * 100)
@@ -197,9 +198,47 @@ def send_bist_open():
     text = 'yükseliş' if xu100_change > 0 else 'düşüş'
     subject = ("send_bist100_open")
     body = f"""🔴 #BIST100 {day} {turkish_month} tarihinde güne %{xu100_change} {text} ile başladı.
+    
 {emo} Açılış Fiyatı: {xu100_open} \n
     """
     send_email(subject, body)
+    
+def send_bist_close():
+    today_date = datetime.now()
+    day = today_date.strftime("%d")
+    month = today_date.strftime("%B")
+    turkish_month = {
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }[month]
+    xu100 = yf.Ticker('XU100.IS')
+    xu100_data = xu100.history(period='max')
+    xu100_current = xu100_data['Close'][-1]
+    xu100_prev = xu100_data['Close'][-2]
+    xu100_current_change = (((xu100_current - xu100_prev) / xu100_prev) * 100)
+    xu100_current_change = round(xu100_current_change, 2)
+    emo = '📈' if xu100_current_change > 0 else '📉'
+    text = 'yükseliş' if xu100_current_change > 0 else 'düşüş'
+    subject = ("send_bist100_open")
+    body = f"""🔴 #BIST100 {day} {turkish_month} tarihinde günü %{xu100_current_change} {text} ile kapattı.
+    
+{emo} Kapanış Fiyatı: {xu100_current} \n
+    """
+    
+    send_email(subject, body)
+    #print(body)
+    
+
 
 def get_crypto_price(url):
     response = requests.get(url)
@@ -256,32 +295,61 @@ def bist_by_time():
     chosen_stock = random.choice(stocks)
     stock_code = chosen_stock + '.IS'
     chosen_stock_info = yf.Ticker(stock_code)
-    today = chosen_stock_info.info.get('currentPrice', '')
-    month_1_close = chosen_stock_info.history(period='max').iloc[-30]['Open']
-    month_1_change_percent = (((today - month_1_close) / today) * 100).round(1)
-    day_5_close = chosen_stock_info.history(period='max').iloc[-5]['Open']
-    day_5_change_percent = (((today - day_5_close) / today) * 100).round(1)
-    month_3_close = chosen_stock_info.history(period='max').iloc[-180]['Open']
-    month_3_change_percent = (((today - month_3_close) / today) * 100).round(1)
+    
+    # Retrieve historical data
+    hist_data = chosen_stock_info.history(period='max')
 
+    # Get the latest price
+    today = chosen_stock_info.info.get('currentPrice', '0')
+
+    # Calculate percentage changes
+    month_1_close = hist_data['Close'].iloc[-31]
+    month_1_change_percent = (((today - month_1_close) / month_1_close) * 100).round(1)
+    
+    day_5_close = hist_data['Close'].iloc[-6]
+    day_5_change_percent = (((today - day_5_close) / day_5_close) * 100).round(1)
+    
+    month_6_close = hist_data['Close'].iloc[-181]
+    month_6_change_percent = (((today - month_6_close) / month_6_close) * 100).round(1)
+    
+    month_1_date = hist_data.index[-31].strftime('%d/%m/%Y')
+    day_5_date = hist_data.index[-6].strftime('%d/%m/%Y')
+    month_6_date = hist_data.index[-181].strftime('%d/%m/%Y')
+    
+    determine = lambda x: 'arttı' if x > 0 else 'azaldı'
+    
+    # Plot historical prices
+    plt.figure(figsize=(12, 6))
+    plt.plot(hist_data['Close'])
+    plt.title(f'{chosen_stock} Hisse Senedi Grafiği')
+    plt.xlabel('Tarih')
+    plt.ylabel('Fiyat')
+    plt.grid(False)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.savefig(f'{chosen_stock}.png')
+    plt.show()
+
+    # Construct the message
     body = f"""🔴 #{chosen_stock} Hissesinin Zamana Bağlı Performansı 👇
 
 ⬛ Güncel Fiyat: {today}
-⬛ 5 Günlük Fiyat Değişimi: %{day_5_change_percent}
-⬛ 1 Aylık Fiyat Değişimi: %{month_1_change_percent}
-⬛ 6 Aylık Fiyat Değişimi: %{month_3_change_percent}
+⬛ {day_5_date} tarihinden beri %{day_5_change_percent} {determine(day_5_change_percent)}
+⬛ {month_1_date} tarihinden beri %{month_1_change_percent} {determine(month_1_change_percent)}
+⬛ {month_6_date} tarihinden beri %{month_6_change_percent} {determine(month_6_change_percent)}
 
 #yatırım #borsa #hisse #hisseanaliz #bist #bist100 #bist30 #borsaistanbul
           """
     subject = ("bist_by_time")
 
-    send_email(subject, body)
+    #send_email(subject, body)
 
 # İlk çalıştırma
 #get_gold_price_and_send_email()
 #send_bist_open()
+#send_bist_close()
 #print_crypto_data(cryptos)   
-#bist_by_time()
+bist_by_time()
 #currency_send()
 #silver()
 
