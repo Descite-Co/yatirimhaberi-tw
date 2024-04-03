@@ -1,3 +1,4 @@
+from email.mime.image import MIMEImage
 import http.client
 import json
 from datetime import datetime, timedelta
@@ -10,6 +11,7 @@ from bs4 import BeautifulSoup
 import yfinance as yf
 import random
 import matplotlib.pyplot as plt
+from io import BytesIO
 
 # SMTP ayarlarını buraya al
 email = 'omerddduran@gmail.com'
@@ -116,7 +118,7 @@ def currency_send():
         print("Döviz kurları alınamadı.")
 
 
-def send_email(subject, body):
+def send_email(subject, body, attachment=None):
     # E-posta gönderme işlemi
     server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
     server.login(email, password)
@@ -124,9 +126,15 @@ def send_email(subject, body):
     msg = MIMEMultipart()
     msg['From'] = email
     msg['To'] = 'trigger@applet.ifttt.com'
+    #msg['To'] = 'furkanunsalan@gmail.com'
     msg['Subject'] = subject
-
+    
     msg.attach(MIMEText(body, 'plain'))
+    
+    #Attach the image
+    img = MIMEImage(attachment.read())  # Create MIMEImage from the BytesIO object
+    img.add_header('Content-Disposition', 'attachment', filename=f"{subject}.png")  # Add the image as an attachment
+    msg.attach(img)
 
     server.send_message(msg)
     server.quit()
@@ -237,8 +245,6 @@ def send_bist_close():
     
     send_email(subject, body)
     #print(body)
-    
-
 
 def get_crypto_price(url):
     response = requests.get(url)
@@ -327,8 +333,11 @@ def bist_by_time():
     plt.grid(False)
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig(f'{chosen_stock}.png')
-    plt.show()
+    
+    # Save the plot as a BytesIO object
+    image_stream = BytesIO()
+    plt.savefig(image_stream, format='png')  # Save the plot as PNG image to the BytesIO object
+    image_stream.seek(0)
 
     # Construct the message
     body = f"""🔴 #{chosen_stock} Hissesinin Zamana Bağlı Performansı 👇
@@ -342,14 +351,15 @@ def bist_by_time():
           """
     subject = ("bist_by_time")
 
-    #send_email(subject, body)
+    send_email(subject, body, image_stream)
 
 # İlk çalıştırma
+
 #get_gold_price_and_send_email()
 #send_bist_open()
 #send_bist_close()
 #print_crypto_data(cryptos)   
-bist_by_time()
+#bist_by_time()
 #currency_send()
 #silver()
 
@@ -397,12 +407,16 @@ while True:
     if now.weekday() < 5 and now.hour == 10 and now.minute == 15:
         send_bist_open()
         time.sleep(120) 
-                   
-
-
-
-
-
+    
+    # Bist Kapanış Fiyatı
+    if now.weekday() < 5 and now.hour == 18 and now.minute == 00:
+        send_bist_close()
+        time.sleep(120)
+    
+    # SAAT1 ve SAAT2 de zamanlık hisse analizi paylaşılacak SAATLERİ BELİRLENECEK
+    if now.weekday() < 5 and now.hour == 00 and now.minute == 00:
+        bist_by_time()
+        time.sleep(120)
 
     else:
         time.sleep(1)
