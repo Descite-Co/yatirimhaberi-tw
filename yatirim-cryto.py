@@ -352,6 +352,95 @@ def bist_by_time():
     subject = ("bist_by_time")
 
     send_email(subject, body, image_stream)
+    
+def bist30_change():
+    stocks = [
+    'ADEL.IS', 'AFYON.IS', 'AKBNK.IS', 'AKSA.IS', 'AKSEN.IS', 'ALARK.IS', 'ALBRK.IS', 'ALCTL.IS', 'ANELE.IS', 'ARCLK.IS',
+    'ASELS.IS', 'AYGAZ.IS', 'BIMAS.IS', 'BRSAN.IS', 'CCOLA.IS', 'CEYLN.IS', 'CRDFA.IS', 'DEVA.IS', 'DGKLB.IS', 'DOAS.IS',
+    'ECILC.IS', 'EGEEN.IS', 'ENJSA.IS', 'ENKAI.IS', 'ESCOM.IS', 'FROTO.IS', 'GOLTS.IS', 'GOODY.IS', 'ICBCT.IS', 'IEYHO.IS',
+    'KCHOL.IS', 'KLMSN.IS', 'KOZAA.IS', 'KOZAL.IS', 'KRDMD.IS', 'PETKM.IS', 'PGSUS.IS', 'SASA.IS', 'SISE.IS', 'SKTAS.IS',
+    'SODA.IS', 'TAVHL.IS', 'THYAO.IS', 'TOASO.IS', 'TTRAK.IS', 'ULKER.IS', 'VESTL.IS', 'YATAS.IS'
+]
+    chosen_stock = random.choice(stocks)
+    stock_code = chosen_stock + '.IS'
+    today_date = datetime.now()
+    day = today_date.strftime("%d")
+    month = today_date.strftime("%B")
+    turkish_month = {
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }[month]
+    hisse = yf.Ticker(stock_code)
+    hisse_data = hisse.history(period='max')
+    hisse_current = hisse.info.get('currentPrice', '0')
+    hisse_prev = hisse.info.get('previousClose', '0')
+    hisse_current_change = (((hisse_current - hisse_prev) / hisse_prev) * 100)
+    hisse_current_change = round(hisse_current_change, 2)
+    emo = '📈' if hisse_current_change > 0 else '📉'
+    text = 'yükseldi' if hisse_current_change > 0 else 'düştü'
+    subject = ("send_bist30_stock")
+    body = f"""🔴 #{chosen_stock} bugün %{hisse_current_change} {text}
+    
+{emo} Anlık Fiyatı: {hisse_current} \n
+    """
+    
+    #print(body)
+    send_email(subject, body)
+
+def halka_arz ():
+    today_date = datetime.now()
+    day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day # BUNU HER DAY KULLANILAN YERDE KULLANALIM
+    month = today_date.strftime("%B")
+    turkish_month = {
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }[month]
+    stocks = ['ODINE', 'MOGAN', 'ARTMS', 'ALVES', "LMKDC"] #STOCK CODES FOR BIST30?????
+    change_rates = []
+    stock_prices = []
+    subject = ("send_bist30_stock")
+    body = f"""🔴 {day} {turkish_month} Halka Arz Tablosu \n
+"""
+    for stock in stocks[::-1]:
+        stock_code = stock + '.IS'
+        hisse = yf.Ticker(stock_code)
+        hisse_data = hisse.history(period='max')
+        hisse_current = hisse_data['Close'][-1]
+        hisse_prev = hisse_data['Close'][-2]
+        hisse_current_change = (((hisse_current - hisse_prev) / hisse_prev) * 100)
+        hisse_current_change = round(hisse_current_change, 2)
+        change_rates.append(hisse_current_change)
+        stock_prices.append(hisse_current)
+        emo = '📈' if hisse_current_change > 0 else '📉'
+        text = 'yükseldi' if hisse_current_change > 0 else 'düştü'
+        tavan_check = " - Hisse Tavanda" if hisse_current_change > 9.9 else ""
+        message = f"{emo} #{stock} bugün %{hisse_current_change} {text}"
+        body += f"{message + tavan_check}\n"
+    
+    #print(body)
+    send_email(subject, body)
+    
 
 # İlk çalıştırma
 
@@ -360,6 +449,8 @@ def bist_by_time():
 #send_bist_close()
 #print_crypto_data(cryptos)   
 #bist_by_time()
+#bist30_change()
+#halka_arz()
 #currency_send()
 #silver()
 
@@ -416,6 +507,16 @@ while True:
     # SAAT1 ve SAAT2 de zamanlık hisse analizi paylaşılacak SAATLERİ BELİRLENECEK
     if now.weekday() < 5 and now.hour == 00 and now.minute == 00:
         bist_by_time()
+        time.sleep(120)
+    
+    # SAAT1 ve SAAT2 de bist30 hisse değişimi paylaşılacak SAATLERİ BELİRLENECEK
+    if now.weekday() < 5 and now.hour == 00 and now.minute == 00:
+        bist30_change()
+        time.sleep(120)
+    
+    # SAAT1 ve SAAT2 de halka arz tablosu paylaşılacak SAATLERİ BELİRLENECEK
+    if now.weekday() < 5 and now.hour == 00 and now.minute == 00:
+        halka_arz()
         time.sleep(120)
 
     else:
