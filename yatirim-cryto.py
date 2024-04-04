@@ -434,7 +434,7 @@ def halka_arz ():
         stock_prices.append(hisse_current)
         emo = '📈' if hisse_current_change > 0 else '📉'
         text = 'yükseldi' if hisse_current_change > 0 else 'düştü'
-        tavan_check = " - Hisse Tavanda" if hisse_current_change > 9.9 else ""
+        tavan_check = " - Hisse Tavanda" if hisse_current_change > 9.5 else ""
         message = f"{emo} #{stock} bugün %{hisse_current_change} {text}"
         body += f"{message + tavan_check}\n"
     
