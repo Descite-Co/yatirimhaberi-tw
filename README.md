@@ -1,5 +1,5 @@
-#@yatirimhaberi on X
+# @yatirimhaberi on X
 
-##Install Packages
+## Install Packages
 
-Run 'pip install -r requirements.txt' to install required packages.
+Run `pip install -r requirements.txt` to install required packages.
