@@ -533,11 +533,11 @@ while True:
         time.sleep(120)
         
     #test
-    if now.hour == 23 and now.minute == 50:
+    if now.hour == 23 and now.minute == 52:
         halka_arz()
         time.sleep(120)
     
-    if now.hour == 23 and now.minute == 54:
+    if now.hour == 23 and now.minute == 55:
         halka_arz()
         time.sleep(120)
     else:
