@@ -460,8 +460,8 @@ def halka_arz ():
 keep_alive()
 
 while True:
-
-    now = datetime.now()
+    tz = pytz.timezone('Europe/Istanbul')
+    now = datetime.now(tz)
 
     if now.weekday() < 5 and now.hour == 11 and now.minute == 00:
         silver()
@@ -534,11 +534,11 @@ while True:
         time.sleep(120)
         
     #test
-    if now.hour == 24 and now.minute == 3:
+    if now.hour == 24 and now.minute == 8:
         halka_arz()
         time.sleep(120)
     
-    if now.hour == 24 and now.minute == 6:
+    if now.hour == 24 and now.minute == 11:
         halka_arz()
         time.sleep(120)
     else:
