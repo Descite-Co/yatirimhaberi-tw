@@ -12,7 +12,6 @@ import yfinance as yf
 import random
 import matplotlib.pyplot as plt
 from io import BytesIO
-from keep_alive import keep_alive
 
 # SMTP ayarlarını buraya al
 email = 'omerddduran@gmail.com'
@@ -127,15 +126,11 @@ def send_email(subject, body, attachment=None):
     msg = MIMEMultipart()
     msg['From'] = email
     msg['To'] = 'trigger@applet.ifttt.com'
-    #msg['To'] = 'furkanunsalan@gmail.com'
     msg['Subject'] = subject
     
     msg.attach(MIMEText(body, 'plain'))
     
-    #Attach the image
-    img = MIMEImage(attachment.read())  # Create MIMEImage from the BytesIO object
-    img.add_header('Content-Disposition', 'attachment', filename=f"{subject}.png")  # Add the image as an attachment
-    msg.attach(img)
+    
 
     server.send_message(msg)
     server.quit()
@@ -155,7 +150,6 @@ def get_gold_price_and_send_email():
     # Bugünün tarihini al ve gün ve ayı ayrı değişkenlere at
     today_date = datetime.now()
     day = today_date.strftime("%d")
-    day = day[1:] if day.startswith('0') else day
     month = today_date.strftime("%B")
     turkish_month = {
         "January": "Ocak",
@@ -184,7 +178,6 @@ def get_gold_price_and_send_email():
 def send_bist_open():
     today_date = datetime.now()
     day = today_date.strftime("%d")
-    day = day[1:] if day.startswith('0') else day
     month = today_date.strftime("%B")
     turkish_month = {
         "January": "Ocak",
@@ -217,7 +210,6 @@ def send_bist_open():
 def send_bist_close():
     today_date = datetime.now()
     day = today_date.strftime("%d")
-    day = day[1:] if day.startswith('0') else day
     month = today_date.strftime("%B")
     turkish_month = {
         "January": "Ocak",
@@ -271,6 +263,7 @@ def silver():
         if data:
             email_body = "🔴 #Gümüş:\n"
             email_body += f'Fiyat: ₺{data["satis"]}\nDeğişim: {data["degisim"]}%\n'
+            
 
             # E-posta gönder
             send_email("Güncel Gümüş Fiyatları", email_body)
@@ -355,7 +348,7 @@ def bist_by_time():
           """
     subject = ("bist_by_time")
 
-    send_email(subject, body, image_stream)
+    send_email(subject, body)
     
 def bist30_change():
     stocks = [
@@ -369,7 +362,6 @@ def bist30_change():
     stock_code = chosen_stock + '.IS'
     today_date = datetime.now()
     day = today_date.strftime("%d")
-    day = day[1:] if day.startswith('0') else day
     month = today_date.strftime("%B")
     turkish_month = {
         "January": "Ocak",
@@ -443,8 +435,8 @@ def halka_arz ():
         message = f"{emo} #{stock} bugün %{hisse_current_change} {text}"
         body += f"{message + tavan_check}\n"
     
-    print(body)
-    #send_email(subject, body)
+    #print(body)
+    send_email(subject, body)
     
 
 # İlk çalıştırma
@@ -455,75 +447,82 @@ def halka_arz ():
 #print_crypto_data(cryptos)   
 #bist_by_time()
 #bist30_change()
-halka_arz()
+#halka_arz()
 #currency_send()
 #silver()
-
-# Flask sunucusunu çalıştır.
-keep_alive()
+#random_stock()
 
 while True:
 
     now = datetime.now()
 
-    # Hafta içi her gün saat 12 ve 16da gümüş fiyatı paylaşılıcak
-    if now.weekday() < 5 and now.hour == 12 and now.minute == 00:
+    if now.weekday() < 5 and now.hour == 11 and now.minute == 00:
         silver()
         time.sleep(120)
 
     if now.weekday() < 5 and now.hour == 16 and now.minute == 00:
         silver()
         time.sleep(120)
-
-    # Her gün saat 10 ve 19da en büyük kripto paraların verilieri paylaşılıcak.    
-    if now.weekday() < 7 and now.hour == 10 and now.minute == 00:
+   
+    if now.weekday() < 7 and now.hour == 09 and now.minute == 00:
         print_crypto_data(cryptos)
         time.sleep(120)
 
     if now.weekday() < 7 and now.hour == 19 and now.minute == 00:
         print_crypto_data(cryptos)
         time.sleep(120)
+    
 
-    # Her gün saat 11 ve 17da döviz paylaşılıcak.    
-    if now.weekday() < 5 and now.hour == 11 and now.minute == 00:
+    if now.weekday() < 5 and now.hour == 10 and now.minute == 30:
         currency_send()
         time.sleep(120)
 
-    if now.weekday() < 5 and now.hour == 17 and now.minute == 00:
+    if now.weekday() < 5 and now.hour == 17 and now.minute == 30:
         currency_send()
-        time.sleep(120)     
+        time.sleep(120)
 
-    # Her gün saat 11.30 ve 14da altın verilieri paylaşılıcak.    
     if now.weekday() < 5 and now.hour == 11 and now.minute == 30:
         get_gold_price_and_send_email()
         time.sleep(120)
 
-    if now.weekday() < 5 and now.hour == 14 and now.minute == 00:
+    if now.weekday() < 5 and now.hour == 17 and now.minute == 30:
         get_gold_price_and_send_email()
         time.sleep(120) 
 
-    # Bist Açılış Fiyatı    
     if now.weekday() < 5 and now.hour == 10 and now.minute == 15:
         send_bist_open()
         time.sleep(120) 
     
-    # Bist Kapanış Fiyatı
     if now.weekday() < 5 and now.hour == 18 and now.minute == 00:
         send_bist_close()
         time.sleep(120)
-    
-    # SAAT1 ve SAAT2 de zamanlık hisse analizi paylaşılacak SAATLERİ BELİRLENECEK
-    if now.weekday() < 5 and now.hour == 00 and now.minute == 00:
+
+    if now.weekday() < 7 and now.hour == 09 and now.minute == 30:
         bist_by_time()
         time.sleep(120)
-    
-    # SAAT1 ve SAAT2 de bist30 hisse değişimi paylaşılacak SAATLERİ BELİRLENECEK
-    if now.weekday() < 5 and now.hour == 00 and now.minute == 00:
+
+    if now.weekday() < 7 and now.hour == 15 and now.minute == 00:
+        bist_by_time()
+        time.sleep(120)
+
+    if now.weekday() < 7 and now.hour == 18 and now.minute == 30:
+        bist_by_time()
+        time.sleep(120)    
+
+
+    if now.weekday() < 5 and now.hour == 11 and now.minute == 30:
         bist30_change()
         time.sleep(120)
+
+    if now.weekday() < 5 and now.hour == 13 and now.minute == 30:
+        bist30_change()
+        time.sleep(120)   
+
+    if now.weekday() < 5 and now.hour == 17 and now.minute == 00:
+        bist30_change()
+        time.sleep(120)      
     
-    # SAAT1 ve SAAT2 de halka arz tablosu paylaşılacak SAATLERİ BELİRLENECEK
-    if now.weekday() < 5 and now.hour == 00 and now.minute == 00:
+    if now.weekday() < 5 and now.hour == 20 and now.minute == 00:
         halka_arz()
         time.sleep(120)
 

@@ -2,7 +2,7 @@ import yfinance as yf
 import random
 
 # Hisse listesi
-hisse_listesi = ['AAPL', 'MSFT', 'AMZN', 'GOOGL', 'FB', 'TSLA', 'BRK.A', 'BRK.B', 'JPM', 'JNJ', 'V', 'PG', 'NVDA', 'MA', 'HD', 'DIS', 'UNH', 'PYPL', 'BAC', 'CMCSA', 'XOM', 'INTC', 'ADBE', 'NFLX', 'T', 'CRM', 'ABT', 'CSCO', 'VZ', 'KO', 'MRK', 'PFE', 'PEP', 'WMT', 'CVX', 'MCD', 'TMO', 'WFC', 'ABBV', 'ORCL', 'AMGN', 'NKE', 'ACN', 'IBM', 'QCOM', 'TXN', 'COST', 'LLY', 'HON', 'MDT', 'AVGO', 'DHR', 'NEE', 'UPS', 'LIN', 'SBUX', 'LOW', 'UNP', 'BA', 'MO', 'MMM', 'RTX', 'GS', 'BDX', 'CAT', 'ADP', 'LMT', 'CVS', 'CI', 'DE', 'ANTM', 'SO', 'BMY', 'USB', 'AXP', 'GILD', 'MS', 'ISRG', 'CHTR', 'RTX', 'PLD', 'AEP', 'TGT', 'D', 'DUK', 'BKNG', 'SPGI', 'VRTX', 'ZTS', 'CME', 'COF', 'CSX', 'CCI', 'REGN', 'CL']
+hisse_listesi = ['ACSEL.IS']
 
 # Rastgeele bir hisse seçme
 secilen_hisse = random.choice(hisse_listesi)
@@ -35,7 +35,8 @@ print("Günlük En Düşük Değer: {}".format(duzenle(hisse_bilgileri.get('dayL
 print("Günlük En Yüksek Değer: {}".format(duzenle(hisse_bilgileri.get('dayHigh', ''), para_birimi(secilen_hisse))))
 
 # Eğer 'regularMarketPrice' bilgisi mevcutsa, kullan. Değilse 'open' ve 'dayHigh' değerlerinden ortalama al.
-anlik_fiyat = hisse_bilgileri.get('regularMarketPrice', (hisse_bilgileri.get('open', 0) + hisse_bilgileri.get('dayHigh', 0)) / 2)
+anlik_fiyat = hisse_bilgileri
+hisse_bilgileri.get('regularMarketPrice', (hisse_bilgileri.get('open', 0) + hisse_bilgileri.get('dayHigh', 0)) / 2)
 print("Anlık Fiyat: {}".format(duzenle(anlik_fiyat, para_birimi(secilen_hisse)) if anlik_fiyat != 0 else ''))
 
 print("52 Haftalık En Düşük Değer: {}".format(duzenle(hisse_bilgileri.get('fiftyTwoWeekLow', ''), para_birimi(secilen_hisse))))
