@@ -401,10 +401,8 @@ def bist30_change():
     send_email(subject, body)
 
 def halka_arz ():
-    print("test atıyom aga")
     tz = pytz.timezone('Europe/Istanbul')
     today_date = datetime.now(tz)
-    print(today_date)
     day = today_date.strftime("%d")
     day = day[1:] if day.startswith('0') else day # BUNU HER DAY KULLANILAN YERDE KULLANALIM
     month = today_date.strftime("%B")
