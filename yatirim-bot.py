@@ -438,8 +438,8 @@ def halka_arz ():
         message = f"{emo} #{stock} bugün %{hisse_current_change} {text}"
         body += f"{message + tavan_check}\n"
     
-    print(body)
-    #send_email(subject, body)
+    #print(body)
+    send_email(subject, body)
     
 
 # İlk çalıştırma
@@ -450,7 +450,7 @@ def halka_arz ():
 #print_crypto_data(cryptos)   
 #bist_by_time()
 #bist30_change()
-halka_arz()
+#halka_arz()
 #currency_send()
 #silver()
 #random_stock()
