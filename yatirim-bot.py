@@ -150,7 +150,8 @@ def get_gold_price_and_send_email():
     parsed_data = json.loads(data)
 
     # Bugünün tarihini al ve gün ve ayı ayrı değişkenlere at
-    today_date = datetime.now()
+    tz = pytz.timezone('Europe/Istanbul')
+    today_date = datetime.now(tz)
     day = today_date.strftime("%d")
     month = today_date.strftime("%B")
     turkish_month = {
@@ -178,7 +179,8 @@ def get_gold_price_and_send_email():
     send_email(subject, body)
 
 def send_bist_open():
-    today_date = datetime.now()
+    tz = pytz.timezone('Europe/Istanbul')
+    today_date = datetime.now(tz)
     day = today_date.strftime("%d")
     month = today_date.strftime("%B")
     turkish_month = {
@@ -210,7 +212,8 @@ def send_bist_open():
     send_email(subject, body)
     
 def send_bist_close():
-    today_date = datetime.now()
+    tz = pytz.timezone('Europe/Istanbul')
+    today_date = datetime.now(tz)
     day = today_date.strftime("%d")
     month = today_date.strftime("%B")
     turkish_month = {
@@ -362,7 +365,8 @@ def bist30_change():
 ]
     chosen_stock = random.choice(stocks)
     stock_code = chosen_stock + '.IS'
-    today_date = datetime.now()
+    tz = pytz.timezone('Europe/Istanbul')
+    today_date = datetime.now(tz)
     day = today_date.strftime("%d")
     month = today_date.strftime("%B")
     turkish_month = {
@@ -466,82 +470,89 @@ while True:
     if now.weekday() < 5 and now.hour == 11 and now.minute == 00:
         silver()
         time.sleep(120)
+        continue
 
     if now.weekday() < 5 and now.hour == 16 and now.minute == 00:
         silver()
         time.sleep(120)
+        continue
    
     if now.weekday() < 7 and now.hour == 9 and now.minute == 00:
         print_crypto_data(cryptos)
         time.sleep(120)
+        continue
 
     if now.weekday() < 7 and now.hour == 19 and now.minute == 00:
         print_crypto_data(cryptos)
         time.sleep(120)
+        continue
     
 
     if now.weekday() < 5 and now.hour == 10 and now.minute == 30:
         currency_send()
         time.sleep(120)
+        continue
 
     if now.weekday() < 5 and now.hour == 17 and now.minute == 30:
         currency_send()
         time.sleep(120)
+        continue
 
     if now.weekday() < 5 and now.hour == 11 and now.minute == 30:
         get_gold_price_and_send_email()
         time.sleep(120)
+        continue
 
     if now.weekday() < 5 and now.hour == 17 and now.minute == 30:
         get_gold_price_and_send_email()
         time.sleep(120) 
+        continue
 
     if now.weekday() < 5 and now.hour == 10 and now.minute == 15:
         send_bist_open()
         time.sleep(120) 
+        continue
     
     if now.weekday() < 5 and now.hour == 18 and now.minute == 00:
         send_bist_close()
         time.sleep(120)
+        continue
 
     if now.weekday() < 7 and now.hour == 9 and now.minute == 30:
         bist_by_time()
         time.sleep(120)
+        continue
 
     if now.weekday() < 7 and now.hour == 15 and now.minute == 00:
         bist_by_time()
         time.sleep(120)
+        continue
 
     if now.weekday() < 7 and now.hour == 18 and now.minute == 30:
         bist_by_time()
         time.sleep(120)    
-
+        continue
 
     if now.weekday() < 5 and now.hour == 11 and now.minute == 30:
         bist30_change()
         time.sleep(120)
+        continue
 
     if now.weekday() < 5 and now.hour == 13 and now.minute == 30:
         bist30_change()
-        time.sleep(120)   
+        time.sleep(120)
+        continue   
 
     if now.weekday() < 5 and now.hour == 17 and now.minute == 00:
         bist30_change()
-        time.sleep(120)      
+        time.sleep(120)  
+        continue    
     
     if now.weekday() < 5 and now.hour == 20 and now.minute == 00:
         halka_arz()
         time.sleep(120)
+        continue
         
-    #test
-    if now.hour == 0 and now.minute == 21:
-        halka_arz()
-        time.sleep(60)
-        continue
-    
-    if now.hour == 0 and now.minute == 23:
-        halka_arz()
-        time.sleep(120)
-        continue
     else:
         time.sleep(1)
+        continue
