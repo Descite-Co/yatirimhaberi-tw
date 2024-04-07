@@ -12,6 +12,7 @@ import yfinance as yf
 import random
 import matplotlib.pyplot as plt
 from io import BytesIO
+from keep_alive import keep_alive
 
 # SMTP ayarlarını buraya al
 email = 'omerddduran@gmail.com'
@@ -457,6 +458,9 @@ def halka_arz ():
 halka_arz()
 #currency_send()
 #silver()
+
+# Flask sunucusunu çalıştır.
+keep_alive()
 
 while True:
 
