@@ -120,7 +120,7 @@ def currency_send():
         print("Döviz kurları alınamadı.")
 
 
-def send_email(subject, body, attachment=None):
+def send_email(subject, body):
     # E-posta gönderme işlemi
     server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
     server.login(email, password)
@@ -397,6 +397,7 @@ def bist30_change():
     send_email(subject, body)
 
 def halka_arz ():
+    print("test atıyom aga")
     tz = pytz.timezone('Europe/Istanbul')
     today_date = datetime.now(tz)
     print(today_date)
@@ -533,11 +534,11 @@ while True:
         time.sleep(120)
         
     #test
-    if now.hour == 23 and now.minute == 56:
+    if now.hour == 24 and now.minute == 3:
         halka_arz()
         time.sleep(120)
     
-    if now.hour == 23 and now.minute == 59:
+    if now.hour == 24 and now.minute == 6:
         halka_arz()
         time.sleep(120)
     else:
