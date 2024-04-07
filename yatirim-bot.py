@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 import yfinance as yf
 import random
 import matplotlib.pyplot as plt
+import pytz
 from io import BytesIO
 
 # SMTP ayarlarını buraya al
@@ -395,7 +396,9 @@ def bist30_change():
     send_email(subject, body)
 
 def halka_arz ():
-    today_date = datetime.now()
+    tz = pytz.timezone('Europe/Istanbul')
+    today_date = datetime.now(tz)
+    print(today_date)
     day = today_date.strftime("%d")
     day = day[1:] if day.startswith('0') else day # BUNU HER DAY KULLANILAN YERDE KULLANALIM
     month = today_date.strftime("%B")
@@ -435,8 +438,8 @@ def halka_arz ():
         message = f"{emo} #{stock} bugün %{hisse_current_change} {text}"
         body += f"{message + tavan_check}\n"
     
-    #print(body)
-    send_email(subject, body)
+    print(body)
+    #send_email(subject, body)
     
 
 # İlk çalıştırma
@@ -447,7 +450,7 @@ def halka_arz ():
 #print_crypto_data(cryptos)   
 #bist_by_time()
 #bist30_change()
-#halka_arz()
+halka_arz()
 #currency_send()
 #silver()
 #random_stock()
@@ -464,7 +467,7 @@ while True:
         silver()
         time.sleep(120)
    
-    if now.weekday() < 7 and now.hour == 09 and now.minute == 00:
+    if now.weekday() < 7 and now.hour == 9 and now.minute == 00:
         print_crypto_data(cryptos)
         time.sleep(120)
 
@@ -497,7 +500,7 @@ while True:
         send_bist_close()
         time.sleep(120)
 
-    if now.weekday() < 7 and now.hour == 09 and now.minute == 30:
+    if now.weekday() < 7 and now.hour == 9 and now.minute == 30:
         bist_by_time()
         time.sleep(120)
 
