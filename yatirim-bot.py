@@ -531,6 +531,14 @@ while True:
     if now.weekday() < 5 and now.hour == 20 and now.minute == 00:
         halka_arz()
         time.sleep(120)
-
+        
+    #test
+    if now.hour == 23 and now.minute == 50:
+        halka_arz()
+        time.sleep(120)
+    
+    if now.hour == 23 and now.minute == 54:
+        halka_arz()
+        time.sleep(120)
     else:
         time.sleep(1)
