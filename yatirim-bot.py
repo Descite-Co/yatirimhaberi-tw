@@ -13,6 +13,7 @@ import random
 import matplotlib.pyplot as plt
 import pytz
 from io import BytesIO
+from keep_alive import keep_alive
 
 # SMTP ayarlarını buraya al
 email = 'omerddduran@gmail.com'
@@ -454,6 +455,8 @@ def halka_arz ():
 #currency_send()
 #silver()
 #random_stock()
+
+keep_alive()
 
 while True:
 
