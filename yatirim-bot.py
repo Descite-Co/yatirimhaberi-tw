@@ -47,7 +47,6 @@ def duzenle(deger, para):
         return ''
 
 def random_stock():
-
     email_body = f"📈 {hisse_bilgileri['shortName']} hisse senedinin güncel ve uzun dönemli performansı şu şekildedir:\n\n"
     email_body += f"Önceki Kapanış: {duzenle(hisse_bilgileri.get('previousClose', 0))}\n"
     email_body += f"Açılış Fiyatı: {duzenle(hisse_bilgileri.get('open', 0))}\n"
@@ -210,6 +209,7 @@ def send_bist_open():
 {emo} Açılış Fiyatı: {xu100_open} \n
     """
     send_email(subject, body)
+    #print(body)
     
 def send_bist_close():
     tz = pytz.timezone('Europe/Istanbul')
@@ -496,8 +496,8 @@ def sektor_endeks_bilgi():
 #send_bist_close()
 #print_crypto_data(cryptos)   
 #bist_by_time()
-bist30_change()
-#halka_arz()
+#bist30_change()
+halka_arz()
 #currency_send()
 #silver()
 #random_stock()
