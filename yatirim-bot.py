@@ -356,14 +356,9 @@ def bist_by_time():
     send_email(subject, body)
     
 def bist30_change():
-    stocks = [
-    'ADEL.IS', 'AFYON.IS', 'AKBNK.IS', 'AKSA.IS', 'AKSEN.IS', 'ALARK.IS', 'ALBRK.IS', 'ALCTL.IS', 'ANELE.IS', 'ARCLK.IS',
-    'ASELS.IS', 'AYGAZ.IS', 'BIMAS.IS', 'BRSAN.IS', 'CCOLA.IS', 'CEYLN.IS', 'CRDFA.IS', 'DEVA.IS', 'DGKLB.IS', 'DOAS.IS',
-    'ECILC.IS', 'EGEEN.IS', 'ENJSA.IS', 'ENKAI.IS', 'ESCOM.IS', 'FROTO.IS', 'GOLTS.IS', 'GOODY.IS', 'ICBCT.IS', 'IEYHO.IS',
-    'KCHOL.IS', 'KLMSN.IS', 'KOZAA.IS', 'KOZAL.IS', 'KRDMD.IS', 'PETKM.IS', 'PGSUS.IS', 'SASA.IS', 'SISE.IS', 'SKTAS.IS',
-    'SODA.IS', 'TAVHL.IS', 'THYAO.IS', 'TOASO.IS', 'TTRAK.IS', 'ULKER.IS', 'VESTL.IS', 'YATAS.IS'
-]
-    stock_code = random.choice(stocks)
+    stocks = ['ADEL', 'AFYON', 'AKBNK', 'AKSA', 'AKSEN', 'ALARK', 'ALBRK', 'ALCTL', 'ANELE', 'ARCLK', 'ASELS', 'AYGAZ', 'BIMAS', 'BRSAN', 'CCOLA', 'CEYLN', 'CRDFA', 'DEVA', 'DGKLB', 'DOAS', 'ECILC', 'EGEEN', 'ENJSA', 'ENKAI', 'ESCOM', 'FROTO', 'GOLTS', 'GOODY', 'ICBCT', 'IEYHO', 'KCHOL', 'KLMSN', 'KOZAA', 'KOZAL', 'KRDMD', 'PETKM', 'PGSUS', 'SASA', 'SISE', 'SKTAS', 'SODA', 'TAVHL', 'THYAO', 'TOASO', 'TTRAK', 'ULKER', 'VESTL', 'YATAS']
+    chosen_stock = random.choice(stocks)
+    stock_code = chosen_stock + ".IS"
     
     tz = pytz.timezone('Europe/Istanbul')
     today_date = datetime.now(tz)
@@ -392,7 +387,7 @@ def bist30_change():
     emo = '📈' if hisse_current_change > 0 else '📉'
     text = 'yükseldi' if hisse_current_change > 0 else 'düştü'
     subject = ("send_bist30_stock")
-    body = f"""🔴 #{stock_code} bugün %{hisse_current_change} {text}
+    body = f"""🔴 #{chosen_stock} bugün %{hisse_current_change} {text}
     
 {emo} Anlık Fiyatı: {hisse_current} \n
     """
