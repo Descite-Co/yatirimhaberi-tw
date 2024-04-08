@@ -444,7 +444,50 @@ def halka_arz ():
     
     #print(body)
     send_email(subject, body)
+
+def sektor_hisse_bilgi(sektor):
+    stocks = {
+    "Enerji": ["TCELL", "TUPRS", "TSPOR", "HALKB", "GARAN"],
+    "Banka": ["TRCAS", "BIMAS", "TKFEN", "SASA", "SISE"]
+    }
+    subject = ("sektor_hisse_bilgi")
+    body = f"""🔴 {sektor} Hisselerinin 5 Günlük Performansları 👇 
+    \n"""
+    for stock in stocks[sektor]:
+        stock_code = stock + ".IS"
+        stock_info = yf.Ticker(stock_code)
+        stock_data = stock_info.history(period='max')
+        current = stock_info.info.get('currentPrice', '0')
+        day_5_close = stock_data['Close'].iloc[-6]
+        day_5_change_percent = (((current - day_5_close) / day_5_close) * 100).round(1)
+        emo = '📈' if day_5_change_percent > 0 else '📉' 
+        body += f"{emo} #{stock} {stock_info.info.get('longName', '')} %{day_5_change_percent}\n"
+
+    #print(body)
+    send_email(subject, body)
+
+def sektor_endeks_bilgi():
+    endeksler = {
+    "Banka": "XBANK"
+    }
+    subject = ("sektor_hisse_bilgi")
+    body = f"""🔴 Borsa İstanbul Endekslerinin 5 Günlük Performansları 👇 
+    \n"""
+    for k in endeksler:
+        stock_code = endeksler[k] + ".IS"
+        endeks = yf.Ticker(stock_code)
+        endeks_data = endeks.history(period='max')
+        current = endeks_data['Close'][-1]
+        day5 = endeks_data['Close'][-5]
+        change = (((current - day5) / day5) * 100)
+        change = round(change, 2)
+        text = 'Yükseldi' if change > 0 else 'Düştü'
+        emo = '📈' if change > 0 else '📉' 
+        body += f"{emo} #{endeksler[k]} {endeks.info.get('longName')} 5 Günde %{change} {text}"
     
+
+    #print(body)
+    send_email(subject, body)
 
 # İlk çalıştırma
 
@@ -458,6 +501,8 @@ def halka_arz ():
 #currency_send()
 #silver()
 #random_stock()
+#sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
+#sektor_endeks_bilgi() #SAAT BELİRLENECEK
 
 keep_alive()
 
