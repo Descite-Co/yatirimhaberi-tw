@@ -244,8 +244,8 @@ def send_bist_close():
 {emo} Kapanış Fiyatı: {xu100_current} \n
     """
     
-    send_email(subject, body)
-    #print(body)
+    #send_email(subject, body)
+    print(body)
 
 def get_crypto_price(url):
     response = requests.get(url)
@@ -492,7 +492,7 @@ def sektor_endeks_bilgi():
 # İlk çalıştırma
 
 #get_gold_price_and_send_email()
-#send_bist_open()
+send_bist_open()
 #send_bist_close()
 #print_crypto_data(cryptos)   
 #bist_by_time()
