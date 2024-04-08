@@ -244,8 +244,8 @@ def send_bist_close():
 {emo} Kapanış Fiyatı: {xu100_current} \n
     """
     
-    #send_email(subject, body)
-    print(body)
+    send_email(subject, body)
+    #print(body)
 
 def get_crypto_price(url):
     response = requests.get(url)
@@ -363,8 +363,8 @@ def bist30_change():
     'KCHOL.IS', 'KLMSN.IS', 'KOZAA.IS', 'KOZAL.IS', 'KRDMD.IS', 'PETKM.IS', 'PGSUS.IS', 'SASA.IS', 'SISE.IS', 'SKTAS.IS',
     'SODA.IS', 'TAVHL.IS', 'THYAO.IS', 'TOASO.IS', 'TTRAK.IS', 'ULKER.IS', 'VESTL.IS', 'YATAS.IS'
 ]
-    chosen_stock = random.choice(stocks)
-    stock_code = chosen_stock + '.IS'
+    stock_code = random.choice(stocks)
+    
     tz = pytz.timezone('Europe/Istanbul')
     today_date = datetime.now(tz)
     day = today_date.strftime("%d")
@@ -392,7 +392,7 @@ def bist30_change():
     emo = '📈' if hisse_current_change > 0 else '📉'
     text = 'yükseldi' if hisse_current_change > 0 else 'düştü'
     subject = ("send_bist30_stock")
-    body = f"""🔴 #{chosen_stock} bugün %{hisse_current_change} {text}
+    body = f"""🔴 #{stock_code} bugün %{hisse_current_change} {text}
     
 {emo} Anlık Fiyatı: {hisse_current} \n
     """
@@ -492,11 +492,11 @@ def sektor_endeks_bilgi():
 # İlk çalıştırma
 
 #get_gold_price_and_send_email()
-send_bist_open()
+#send_bist_open()
 #send_bist_close()
 #print_crypto_data(cryptos)   
 #bist_by_time()
-#bist30_change()
+bist30_change()
 #halka_arz()
 #currency_send()
 #silver()
