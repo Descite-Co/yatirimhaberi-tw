@@ -19,24 +19,6 @@ from keep_alive import keep_alive
 email = 'omerddduran@gmail.com'
 password = 'qbfl udxd kjya tpiv'
 
-
-# Hisse listesi
-hisse_listesi = ['AAPL', 'MSFT', 'AMZN', 'GOOGL', 'FB', 'TSLA', 'BRK.A', 'BRK.B', 'JPM', 'JNJ', 'V', 'PG', 'NVDA', 'MA', 'HD', 'DIS', 'UNH', 'PYPL', 'BAC', 'CMCSA', 'XOM', 'INTC', 'ADBE', 'NFLX', 'T', 'CRM', 'ABT', 'CSCO', 'VZ', 'KO', 'MRK', 'PFE', 'PEP', 'WMT', 'CVX', 'MCD', 'TMO', 'WFC', 'ABBV', 'ORCL', 'AMGN', 'NKE', 'ACN', 'IBM', 'QCOM', 'TXN', 'COST', 'LLY', 'HON', 'MDT', 'AVGO', 'DHR', 'NEE', 'UPS', 'LIN', 'SBUX', 'LOW', 'UNP', 'BA', 'MO', 'MMM', 'RTX', 'GS', 'BDX', 'CAT', 'ADP', 'LMT', 'CVS', 'CI', 'DE', 'ANTM', 'SO', 'BMY', 'USB', 'AXP', 'GILD', 'MS', 'ISRG', 'CHTR', 'RTX', 'PLD', 'AEP', 'TGT', 'D', 'DUK', 'BKNG', 'SPGI', 'VRTX', 'ZTS', 'CME', 'COF', 'CSX', 'CCI', 'REGN', 'CL']
-
-# Rastgeele bir hisse seçme
-secilen_hisse = random.choice(hisse_listesi)
-
-# Para birimini belirleme fonksiyonu
-def para_birimi(hisse_kodu):
-    if hisse_kodu.endswith('.IS'):
-        return 'TRY'
-    else:
-        return 'USD'
-
-# Seçilen hisse için verileri al
-hisse = yf.Ticker(secilen_hisse)
-hisse_bilgileri = hisse.info
-
 # Fiyat ve hacim değerlerini düzenleyen fonksiyon
 def duzenle(deger, para):
     if deger != 0 and isinstance(deger, int):
@@ -47,23 +29,32 @@ def duzenle(deger, para):
         return ''
 
 def random_stock():
-    email_body = f"📈 {hisse_bilgileri['shortName']} hisse senedinin güncel ve uzun dönemli performansı şu şekildedir:\n\n"
-    email_body += f"Önceki Kapanış: {duzenle(hisse_bilgileri.get('previousClose', 0))}\n"
-    email_body += f"Açılış Fiyatı: {duzenle(hisse_bilgileri.get('open', 0))}\n"
-    email_body += f"Günlük En Düşük Değer: {duzenle(hisse_bilgileri.get('dayLow', 0))}\n"
-    email_body += f"Günlük En Yüksek Değer: {duzenle(hisse_bilgileri.get('dayHigh', 0))}\n"
+    # Hisse listesi
+    hisse_listesi = ['AAPL', 'MSFT', 'AMZN', 'GOOGL', 'FB', 'TSLA', 'BRK.A', 'BRK.B', 'JPM', 'JNJ', 'V', 'PG', 'NVDA', 'MA', 'HD', 'DIS', 'UNH', 'PYPL', 'BAC', 'CMCSA', 'XOM', 'INTC', 'ADBE', 'NFLX', 'T', 'CRM', 'ABT', 'CSCO', 'VZ', 'KO', 'MRK', 'PFE', 'PEP', 'WMT', 'CVX', 'MCD', 'TMO', 'WFC', 'ABBV', 'ORCL', 'AMGN', 'NKE', 'ACN', 'IBM', 'QCOM', 'TXN', 'COST', 'LLY', 'HON', 'MDT', 'AVGO', 'DHR', 'NEE', 'UPS', 'LIN', 'SBUX', 'LOW', 'UNP', 'BA', 'MO', 'MMM', 'RTX', 'GS', 'BDX', 'CAT', 'ADP', 'LMT', 'CVS', 'CI', 'DE', 'ANTM', 'SO', 'BMY', 'USB', 'AXP', 'GILD', 'MS', 'ISRG', 'CHTR', 'RTX', 'PLD', 'AEP', 'TGT', 'D', 'DUK', 'BKNG', 'SPGI', 'VRTX', 'ZTS', 'CME', 'COF', 'CSX', 'CCI', 'REGN', 'CL']
+
+    # Rastgeele bir hisse seçme
+    secilen_hisse = random.choice(hisse_listesi)
+    hisse = yf.Ticker(secilen_hisse)
+    hisse_bilgileri = hisse.info
+    currency = hisse_bilgileri["financialCurrency"] 
+    
+    email_body = f"📈#{secilen_hisse} {hisse_bilgileri['shortName']} hisse senedinin güncel ve uzun dönemli performansı 👇\n\n"
+    email_body += f"Önceki Kapanış: {duzenle(hisse_bilgileri.get('previousClose', 0), currency)}\n"
+    email_body += f"Açılış Fiyatı: {duzenle(hisse_bilgileri.get('open', 0), currency)}\n"
+    email_body += f"Günlük En Düşük Değer: {duzenle(hisse_bilgileri.get('dayLow', 0), currency)}\n"
+    email_body += f"Günlük En Yüksek Değer: {duzenle(hisse_bilgileri.get('dayHigh', 0), currency)}\n"
     anlik_fiyat = hisse_bilgileri.get('regularMarketPrice', (hisse_bilgileri.get('open', 0) + hisse_bilgileri.get('dayHigh', 0)) / 2)
-    email_body += f"Anlık Fiyat: {duzenle(anlik_fiyat if anlik_fiyat != 0 else '')}\n"
-    email_body += f"52 Haftalık En Düşük Değer: {duzenle(hisse_bilgileri.get('fiftyTwoWeekLow', 0))}\n"
-    email_body += f"52 Haftalık En Yüksek Değer: {duzenle(hisse_bilgileri.get('fiftyTwoWeekHigh', 0))}\n"
-    email_body += f"Günlük İşlem Hacmi: {duzenle(hisse_bilgileri.get('volume', 'hisse'))}\n"
-    email_body += f"Ortalama Günlük İşlem Hacmi (Son 10 Gün): {duzenle(hisse_bilgileri.get('averageDailyVolume10Day', 'hisse'))}\n"
+    email_body += f"Anlık Fiyat: {duzenle(anlik_fiyat if anlik_fiyat != 0 else '', currency)}\n"
+    email_body += f"52 Haftalık En Düşük Değer: {duzenle(hisse_bilgileri.get('fiftyTwoWeekLow', 0), currency)}\n"
+    email_body += f"52 Haftalık En Yüksek Değer: {duzenle(hisse_bilgileri.get('fiftyTwoWeekHigh', 0), currency)}\n"
+    email_body += f"Günlük İşlem Hacmi: {duzenle(hisse_bilgileri.get('volume', 'hisse'), currency)}\n"
+    email_body += f"Ortalama Günlük İşlem Hacmi (Son 10 Gün): {duzenle(hisse_bilgileri.get('averageDailyVolume10Day', 'hisse'), currency)}\n"
     son_ceyrek_buyume_orani = hisse_bilgileri.get('quarterlyEarningsGrowth', '')
     if son_ceyrek_buyume_orani != '':
         email_body += f"Son Çeyrek Dönem Büyüme Oranı: %{son_ceyrek_buyume_orani:.1f}\n"
-    email_body += f"Net Gelir: {duzenle(hisse_bilgileri.get('netIncomeToCommon', 0))}\n"
+    email_body += f"Net Gelir: {duzenle(hisse_bilgileri.get('netIncomeToCommon', 0), currency)}\n"
     email_body += f"Brüt Kar Marjı: %{hisse_bilgileri.get('grossMargins', 0) * 100:.3f}\n"
-    email_body += f"Piyasa Değeri: {duzenle(hisse_bilgileri.get('marketCap', 0))}\n"
+    email_body += f"Piyasa Değeri: {duzenle(hisse_bilgileri.get('marketCap', 0), currency)}\n"
 
     # E-posta gönder
     subject = f"{hisse_bilgileri['shortName']} Hissesi Performans Raporu"
@@ -152,6 +143,7 @@ def get_gold_price_and_send_email():
     tz = pytz.timezone('Europe/Istanbul')
     today_date = datetime.now(tz)
     day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day
     month = today_date.strftime("%B")
     turkish_month = {
         "January": "Ocak",
@@ -167,6 +159,25 @@ def get_gold_price_and_send_email():
         "November": "Kasım",
         "December": "Aralık"
     }[month]
+    
+    gold = yf.Ticker('GC=F')
+    hist_data = gold.history(period='max')
+    
+    # Plot historical prices
+    plt.figure(figsize=(12, 6))
+    plt.plot(hist_data['Close'])
+    plt.title('Ons Altın Grafiği')
+    plt.xlabel('Tarih')
+    plt.ylabel('Fiyat')
+    plt.grid(False)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+            
+            
+    # Save the plot as a BytesIO object
+    image_stream = BytesIO()
+    plt.savefig(image_stream, format='png')  # Save the plot as PNG image to the BytesIO object
+    image_stream.seek(0)
 
     # E-posta oluşturma işlemi
     subject = f"🔴 Altın Fiyatları {day} {turkish_month}"
@@ -176,11 +187,13 @@ def get_gold_price_and_send_email():
             body += f"💰 {item['name']}: Alış - {item['buying']}, Satış - {item['selling']}\n"
 
     send_email(subject, body)
+    #print(body)
 
 def send_bist_open():
     tz = pytz.timezone('Europe/Istanbul')
     today_date = datetime.now(tz)
     day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day
     month = today_date.strftime("%B")
     turkish_month = {
         "January": "Ocak",
@@ -215,6 +228,7 @@ def send_bist_close():
     tz = pytz.timezone('Europe/Istanbul')
     today_date = datetime.now(tz)
     day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day
     month = today_date.strftime("%B")
     turkish_month = {
         "January": "Ocak",
@@ -269,9 +283,31 @@ def silver():
             email_body = "🔴 #Gümüş:\n"
             email_body += f'Fiyat: ₺{data["satis"]}\nDeğişim: {data["degisim"]}%\n'
             
+            
+            silver = yf.Ticker('SI=F')
+            hist_data = silver.history(period='max')
+            
+            # Plot historical prices
+            plt.figure(figsize=(12, 6))
+            plt.plot(hist_data['Close'])
+            plt.title('Gümüş Grafiği')
+            plt.xlabel('Tarih')
+            plt.ylabel('Fiyat')
+            plt.grid(False)
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            
+            
+            # Save the plot as a BytesIO object
+            image_stream = BytesIO()
+            plt.savefig(image_stream, format='png')  # Save the plot as PNG image to the BytesIO object
+            image_stream.seek(0)
+            
 
             # E-posta gönder
             send_email("Güncel Gümüş Fiyatları", email_body)
+            #print(email_body)
+            
         else:
             print('Gümüş verisi bulunamadı.')
     else:
@@ -288,15 +324,17 @@ def format_market_cap(market_cap):
         return f"${market_cap / 1_000_000_000_000:.2f} Trilyon"
 
 def print_crypto_data(cryptos):
-    print("🚀 Anlık Kripto Verileri 🚀")
+    body = "🚀 Anlık Kripto Verileri 🚀\n"
     for crypto, urls in cryptos.items():
         price = get_crypto_price(urls[0])
         market_cap = get_crypto_price(urls[1])
         if price is not None and market_cap is not None:
-            print(f"\n🌟 #{crypto} Fiyatı: ${format_price(price)}")
-            print(f"💰 #{crypto} Piyasa Değeri: {format_market_cap(float(market_cap))}")
+            body += f"\n🌟 #{crypto} Fiyatı: ${format_price(price)}\n"
+            body += f"💰 #{crypto} Piyasa Değeri: {format_market_cap(float(market_cap))}\n"
         else:
             print(f"\n🚫 {crypto} verileri alınamadı.")
+    send_email("Anlık Kripto Verileri", body)
+    #print(body)
 
 def bist_by_time():
     stocks = ['ACSEL', 'ADEL', 'ADESE', 'AEFES', 'AFYON', 'AGYO', 'AKBNK', 'AKCNS', 'AKENR', 'AKFGY', 'AKGRT', 'AKMGY', 'AKSA', 'AKSEN', 'AKSGY', 'AKSUE', 'ALARK', 'ALBRK', 'ALCAR', 'ALCTL', 'ALGYO', 'ALKIM', 'ANELE', 'ANHYT', 'ANSGR', 'ARCLK', 'ARENA', 'ARSAN', 'ASELS', 'ASUZU', 'ATAGY', 'ATEKS', 'ATLAS', 'ATSYH', 'AVGYO', 'AVHOL', 'AVOD', 'AVTUR', 'AYCES', 'AYEN', 'AYES', 'AYGAZ', 'BAGFS', 'BAKAB', 'BALAT', 'BANVT', 'BASCM', 'BEYAZ', 'BFREN', 'BIMAS', 'BIZIM', 'BJKAS', 'BLCYT', 'BNTAS', 'BOSSA', 'BRISA', 'BRKSN', 'BRMEN', 'BRSAN', 'BRYAT', 'BSOKE', 'BTCIM', 'BUCIM', 'BURCE', 'BURVA', 'CCOLA', 'CELHA', 'CEMAS', 'CEMTS', 'CIMSA', 'CLEBI', 'CMBTN', 'CMENT', 'COSMO', 'CRDFA', 'CRFSA', 'CUSAN', 'DAGHL', 'DAGI', 'DARDL', 'DENGE', 'DERIM', 'DEVA', 'DGATE', 'DGGYO', 'DIRIT', 'DITAS', 'DMSAS', 'DOAS', 'DOBUR', 'DOCO', 'DOGUB', 'DOHOL', 'DURDO', 'DYOBY', 'DZGYO', 'ECILC', 'ECZYT', 'EDIP', 'EGEEN', 'EGGUB', 'EGPRO', 'EGSER', 'EKGYO', 'EKIZ', 'EMKEL', 'EMNIS', 'ENKAI', 'EPLAS', 'ERBOS', 'EREGL', 'ERSU', 'ESCOM', 'ETILR', 'ETYAT', 'EUHOL', 'EUKYO', 'EUYO', 'FENER', 'FLAP', 'FMIZP', 'FRIGO', 'FROTO', 'GARAN', 'GARFA', 'GEDIK', 'GEDZA', 'GENTS', 'GEREL', 'GLBMD', 'GLRYH', 'GLYHO', 'GOLTS', 'GOODY', 'GOZDE', 'GRNYO', 'GSDDE', 'GSDHO', 'GSRAY', 'GUBRF', 'HALKB', 'HATEK', 'HDFGS', 'HEKTS', 'HLGYO', 'HURGZ', 'ICBCT', 'IDGYO', 'IEYHO', 'IHEVA', 'IHGZT', 'IHLAS', 'IHYAY', 'INDES', 'INFO', 'INTEM', 'IPEKE', 'ISBIR', 'ISBTR', 'ISCTR', 'ISDMR', 'ISFIN', 'ISGSY', 'ISGYO', 'ISMEN', 'ISYAT', 'IZFAS', 'IZMDC', 'JANTS', 'KAPLM', 'KAREL', 'KARSN', 'KARTN', 'KATMR', 'KCHOL', 'KENT', 'KERVN', 'KERVT', 'KLGYO', 'KLMSN', 'KLNMA', 'KNFRT', 'KONYA', 'KORDS', 'KOZAA', 'KOZAL', 'KRDMA', 'KRDMB', 'KRDMD', 'KRGYO', 'KRONT', 'KRSTL', 'KRTEK', 'KSTUR', 'KUTPO', 'KUYAS', 'LIDFA', 'LINK', 'LKMNH', 'LOGO', 'LUKSK', 'MAALT', 'MAKTK', 'MARTI', 'MEGAP', 'MEPET', 'MERIT', 'MERKO', 'METAL', 'METRO', 'METUR', 'MGROS', 'MIPAZ', 'MMCAS', 'MNDRS', 'MRGYO', 'MRSHL', 'MZHLD', 'NETAS', 'NIBAS', 'NTHOL', 'NUGYO', 'NUHCM', 'ODAS', 'ORGE', 'ORMA', 'OSMEN', 'OSTIM', 'OTKAR', 'OYAYO', 'OYLUM', 'OZGYO', 'OZKGY', 'OZRDN', 'PAGYO', 'PARSN', 'PEGYO', 'PENGD', 'PETKM', 'PETUN', 'PGSUS', 'PINSU', 'PKART', 'PKENT', 'PNSUT', 'POLHO', 'POLTK', 'PRKAB', 'PRKME', 'PRZMA', 'PSDTC', 'RAYSG', 'RODRG', 'RTALB', 'RYGYO', 'RYSAS', 'SAHOL', 'SAMAT', 'SANEL', 'SANFM', 'SARKY', 'SASA', 'SAYAS', 'SEKFK', 'SEKUR', 'SELEC', 'SELGD', 'SEYKM', 'SILVR', 'SISE', 'SKBNK', 'SKTAS', 'SNGYO', 'SNKRN', 'SNPAM', 'SODSN', 'SONME', 'SRVGY', 'TATGD', 'TAVHL', 'TBORG', 'TCELL', 'TEKTU', 'TGSAS', 'THYAO', 'TKFEN', 'TKNSA', 'TMPOL', 'TMSN', 'TOASO', 'TRCAS', 'TRGYO', 'TSKB', 'TSPOR', 'TTKOM', 'TTRAK', 'TUCLK', 'TUKAS', 'TUPRS', 'TURGG', 'ULAS', 'ULKER', 'ULUSE', 'ULUUN', 'UMPAS', 'USAK', 'USAS', 'UZERB', 'VAKBN', 'VAKFN', 'VAKKO', 'VANGD', 'VERTU', 'VERUS', 'VESBE', 'VESTL', 'VKFYO', 'VKGYO', 'VKING', 'YAPRK', 'YATAS', 'YAYLA', 'YBTAS', 'YESIL', 'YGGYO', 'YGYO', 'YKBNK', 'YONGA', 'YUNSA', 'YYAPI', 'ZOREN']
@@ -363,6 +401,7 @@ def bist30_change():
     tz = pytz.timezone('Europe/Istanbul')
     today_date = datetime.now(tz)
     day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day
     month = today_date.strftime("%B")
     turkish_month = {
         "January": "Ocak",
@@ -415,10 +454,10 @@ def halka_arz ():
         "November": "Kasım",
         "December": "Aralık"
     }[month]
-    stocks = ['ODINE', 'MOGAN', 'ARTMS', 'ALVES', "LMKDC"] #STOCK CODES FOR BIST30?????
+    stocks = ['ENTRA', 'ODINE', 'MOGAN', 'ARTMS', 'ALVES', "LMKDC"]
     change_rates = []
     stock_prices = []
-    subject = ("send_bist30_stock")
+    subject = ("halka_arz_tablosu")
     body = f"""🔴 {day} {turkish_month} Halka Arz Tablosu \n
 """
     for stock in stocks[::-1]:
@@ -491,11 +530,11 @@ def sektor_endeks_bilgi():
 #send_bist_close()
 #print_crypto_data(cryptos)   
 #bist_by_time()
-bist30_change()
+#bist30_change()
 #halka_arz()
 #currency_send()
 #silver()
-#random_stock()
+random_stock()
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
 #sektor_endeks_bilgi() #SAAT BELİRLENECEK
 
@@ -571,7 +610,7 @@ while True:
         time.sleep(120)    
         continue
 
-    if now.weekday() < 5 and now.hour == 11 and now.minute == 30:
+    if now.weekday() < 5 and now.hour == 11 and now.minute == 35:
         bist30_change()
         time.sleep(120)
         continue
