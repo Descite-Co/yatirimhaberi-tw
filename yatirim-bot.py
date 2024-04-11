@@ -55,10 +55,36 @@ def random_stock():
     email_body += f"Net Gelir: {duzenle(hisse_bilgileri.get('netIncomeToCommon', 0), currency)}\n"
     email_body += f"Brüt Kar Marjı: %{hisse_bilgileri.get('grossMargins', 0) * 100:.3f}\n"
     email_body += f"Piyasa Değeri: {duzenle(hisse_bilgileri.get('marketCap', 0), currency)}\n"
+    
+    end_date = datetime.now().strftime('%Y-%m-%d')
+    start_date = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+
+    # Download historical stock data for the last year
+    stock_data1 = yf.download(secilen_hisse, start=start_date, end=end_date)
+    
+    # Plot historical prices
+    plt.figure(figsize=(12, 6))
+    plt.plot(stock_data1['Close'])
+    y_min = stock_data1['Close'].min()
+    y_max = stock_data1['Close'].max()
+    y_ticks = range(int(y_min), int(y_max) + 1)
+    plt.yticks(y_ticks)
+    plt.title(f'{hisse_bilgileri["shortName"]} Değişim Grafiği')
+    plt.xlabel('Tarih')
+    plt.ylabel('Fiyat')
+    plt.grid(False)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+               
+    # Save the plot as a BytesIO object
+    image_stream = BytesIO()
+    plt.savefig(image_stream, format='png')  # Save the plot as PNG image to the BytesIO object
+    image_stream.seek(0)
 
     # E-posta gönder
     subject = f"{hisse_bilgileri['shortName']} Hissesi Performans Raporu"
     send_email(subject, email_body)
+    #print(email_body)
     
 def get_data_sil(url):
     headers = {
@@ -500,15 +526,24 @@ def sektor_hisse_bilgi(sektor):
     #print(body)
     send_email(subject, body)
 
-def sektor_endeks_bilgi():
-    endeksler = {
-    "Banka": "XBANK"
-    }
+def sektor_endeks_bilgi(start, end):
+    tz = pytz.timezone('Europe/Istanbul')
+    now = datetime.now(tz)
+    endeksler = ["XUSIN", "XUHIZ", "XUMAL", 
+                 "XUTEK", "XBANK", "XAKUR", 
+                 "XBLSM", "XELKT", "XFINK", 
+                 "XGMYO", "XGIDA", "XHOLD", 
+                 "XILTM", "XINSA", "XKAGT", 
+                 "XKMYA", "XMADN", "XYORT", 
+                 "XMANA", "XMESY", "XSGRT", 
+                 "XSPOR", "XTAST", "XTEKS", 
+                 "XTCRT", "XTRZM", "XULAS"]
+    endeksler = endeksler[start:end+1]
     subject = ("sektor_hisse_bilgi")
     body = f"""🔴 Borsa İstanbul Endekslerinin 5 Günlük Performansları 👇 
     \n"""
-    for k in endeksler:
-        stock_code = endeksler[k] + ".IS"
+    for i in range(len(endeksler)):
+        stock_code = endeksler[i] + ".IS"
         endeks = yf.Ticker(stock_code)
         endeks_data = endeks.history(period='max')
         current = endeks_data['Close'][-1]
@@ -517,11 +552,93 @@ def sektor_endeks_bilgi():
         change = round(change, 2)
         text = 'Yükseldi' if change > 0 else 'Düştü'
         emo = '📈' if change > 0 else '📉' 
-        body += f"{emo} #{endeksler[k]} {endeks.info.get('longName')} 5 Günde %{change} {text}"
+        body += f"{emo} #{endeksler[i]} {endeks.info.get('longName')} 5 Günde %{change} {text}"
     
 
-    #print(body)
+    print(body)
+    #send_email(subject, body)
+
+def bist_karsilastirma():
+    tz = pytz.timezone('Europe/Istanbul')
+    today_date = datetime.now(tz)
+    day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day
+    month = today_date.strftime("%B")
+    turkish_month = {
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }[month]
+    xu100 = yf.Ticker('XU100.IS')
+    xu100_data = xu100.history(period='max')
+    xu100_current = xu100_data['Close'][-1]
+    xu100_prev = xu100_data['Close'][-2]
+    xu100_current_change = (((xu100_current - xu100_prev) / xu100_prev) * 100)
+    xu100_current = round(xu100_current, 2)
+    xu100_current_change = round(xu100_current_change, 2)
+    emo100 = '📈' if xu100_current_change > 0 else '📉'    
+    
+    xu30 = yf.Ticker('XU030.IS')
+    xu30_data = xu30.history(period='max')
+    xu30_current = xu30_data['Close'][-1]
+    xu30_prev = xu30_data['Close'][-2]
+    xu30_current_change = (((xu30_current - xu30_prev) / xu30_prev) * 100)
+    xu30_current = round(xu30_current, 2)
+    xu30_current_change = round(xu30_current_change, 2)
+    emo30 = '📈' if xu30_current_change > 0 else '📉'
+    
+    end_date = datetime.now().strftime('%Y-%m-%d')
+    start_date = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+
+    # Download historical stock data for the last year
+    stock_data1 = yf.download('XU030.IS', start=start_date, end=end_date)
+    stock_data2 = yf.download('XU100.IS', start=start_date, end=end_date)
+    
+    # Plot historical prices
+    plt.figure(figsize=(12, 6))
+    plt.plot(stock_data1['Close'])
+    plt.plot(stock_data2['Close'])
+    y_min = min(stock_data1['Close'].min(), stock_data2['Close'].min())
+    y_max = max(stock_data1['Close'].max(), stock_data2['Close'].max())
+    y_ticks = range(int(y_min), int(y_max) + 1, 500)
+    plt.text(stock_data1.index[-1], stock_data1['Close'][-1], 'XU030.IS', verticalalignment='bottom', horizontalalignment='right', color='blue', fontsize=12)
+    plt.text(stock_data2.index[-1], stock_data2['Close'][-1], 'XU100.IS', verticalalignment='bottom', horizontalalignment='right', color='orange', fontsize=12)
+    plt.yticks(y_ticks)
+    plt.title('BIST30 - BIST100 Değişim Grafiği')
+    plt.xlabel('Tarih')
+    plt.ylabel('Fiyat')
+    plt.grid(False)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+               
+    # Save the plot as a BytesIO object
+    image_stream = BytesIO()
+    plt.savefig(image_stream, format='png')  # Save the plot as PNG image to the BytesIO object
+    image_stream.seek(0)
+    
+    subject = ("bist_karsilastirma")
+    body = f"""🔴 BIST100 - BIST30 Karşılaştırması 👇
+    
+#BIST30
+💸 Anlık Fİyat: {xu30_current}
+{emo30} Günlük Değişim: %{xu30_current_change}
+    
+#BIST100
+💸 Anlık Fiyat: {xu100_current}
+{emo100} Günlük Değişim: %{xu100_current_change}
+    """
+    
     send_email(subject, body)
+    #print(body)
 
 # İlk çalıştırma
 
@@ -534,9 +651,10 @@ def sektor_endeks_bilgi():
 #halka_arz()
 #currency_send()
 #silver()
-random_stock()
+#random_stock()
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
-#sektor_endeks_bilgi() #SAAT BELİRLENECEK
+sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
+#bist_karsilastirma() #SAAT BELİRLENECEK
 
 keep_alive()
 
