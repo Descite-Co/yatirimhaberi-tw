@@ -647,13 +647,13 @@ def bist_karsilastirma():
 #send_bist_close()
 #print_crypto_data(cryptos)   
 #bist_by_time()
-#bist30_change()
+bist30_change()
 #halka_arz()
 #currency_send()
 #silver()
 #random_stock()
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
-sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
+#sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
 #bist_karsilastirma() #SAAT BELİRLENECEK
 
 keep_alive()
