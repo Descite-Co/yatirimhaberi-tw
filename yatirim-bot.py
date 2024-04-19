@@ -209,9 +209,28 @@ def currency_send():
                 email_body += f'{currency} verisi bulunamadı.\n\n'
 
         # E-posta gönder
-        send_email("Güncel Döviz Kurları", email_body)
+        btc = yf.Ticker("TRY=X")
+        btc_data = btc.history(period="3mo")  # adjust the period as needed
+
+        # Plot historical prices
+        plt.figure(figsize=(10, 5))
+        plt.plot(btc_data['Close'], label='Son Fiyat')
+        plt.title('Dolar TL Aylık Grafik')
+        plt.xlabel('Tarih')
+        plt.ylabel('TL')
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+
+        # Save the plot to a BytesIO buffer
+        image_buffer = BytesIO()
+        plt.savefig(image_buffer, format='png')
+        image_buffer.seek(0)
+
+        send_email("Güncel Döviz Kurları #crypto", email_body, image_buffer)
     else:
         print("Döviz kurları alınamadı.")
+
 def silver():
     # Gümüş verilerini al
     json_data = get_data_cur('https://api.genelpara.com/embed/para-birimleri.json')
@@ -480,12 +499,13 @@ def halka_arz ():
     #print(body)
     send_email(subject, body)
 
+
 def sektor_hisse_bilgi(sektor):
     stocks = {
     "Enerji": ["TCELL", "TUPRS", "TSPOR", "HALKB", "GARAN"],
     "Banka": ["TRCAS", "BIMAS", "TKFEN", "SASA", "SISE"]
     }
-    subject = ("sektor_hisse_bilgi")
+    subject = ("sektor_hisse_bilgi #crypto ##crypto")
     body = f"""🔴 {sektor} Hisselerinin 5 Günlük Performansları 👇 
     \n"""
     for stock in stocks[sektor]:
@@ -500,38 +520,37 @@ def sektor_hisse_bilgi(sektor):
 
     #print(body)
     send_email(subject, body)
-
 def sektor_endeks_bilgi(start, end):
     tz = pytz.timezone('Europe/Istanbul')
     now = datetime.now(tz)
-    endeksler = ["XUSIN", "XUHIZ", "XUMAL", 
-                 "XUTEK", "XBANK", "XAKUR", 
-                 "XBLSM", "XELKT", "XFINK", 
-                 "XGMYO", "XGIDA", "XHOLD", 
-                 "XILTM", "XINSA", "XKAGT", 
-                 "XKMYA", "XMADN", "XYORT", 
-                 "XMANA", "XMESY", "XSGRT", 
-                 "XSPOR", "XTAST", "XTEKS", 
+    endeksler = ["XUSIN", "XUHIZ", "XUMAL", "XUTEK", "XBANK", "XAKUR", "XBLSM", "XELKT", "XFINK", "XGMYO", "XGIDA", "XHOLD",
+                 "XILTM", "XINSA", "XKAGT", "XKMYA", "XMADN", "XYORT", "XMANA", "XMESY", "XSGRT", "XSPOR", "XTAST", "XTEKS",
                  "XTCRT", "XTRZM", "XULAS"]
     endeksler = endeksler[start:end+1]
-    subject = ("sektor_hisse_bilgi")
-    body = f"""🔴 Borsa İstanbul Endekslerinin 5 Günlük Performansları 👇 
-    \n"""
-    for i in range(len(endeksler)):
-        stock_code = endeksler[i] + ".IS"
-        endeks = yf.Ticker(stock_code)
-        endeks_data = endeks.history(period='max')
-        current = endeks_data['Close'][-1]
-        day5 = endeks_data['Close'][-5]
-        change = (((current - day5) / day5) * 100)
-        change = round(change, 2)
-        text = 'Yükseldi' if change > 0 else 'Düştü'
-        emo = '📈' if change > 0 else '📉' 
-        body += f"{emo} #{endeksler[i]} {endeks.info.get('longName')} 5 Günde %{change} {text}"
-
+    subject = "sektor_hisse_bilgi"
+    body = "🔴 Borsa İstanbul Endekslerinin 5 Günlük Performansları 👇\n"
+    
+    for index in endeksler:
+        try:
+            stock_code = index + ".IS"
+            endeks = yf.Ticker(stock_code)
+            endeks_data = endeks.history(period='5d')
+            if len(endeks_data) >= 5:
+                current = endeks_data['Close'].iloc[-1]
+                day5 = endeks_data['Close'].iloc[-5]
+                change = (((current - day5) / day5) * 100)
+                change = round(change, 2)
+                text = 'Yükseldi' if change > 0 else 'Düştü'
+                emo = '📈' if change > 0 else '📉'
+                body += f"{emo} #{index} {endeks.info.get('longName', 'Bilgi Yok')} 5 Günde %{change} {text}\n"
+            else:
+                body += f"🔍 #{index} Yeterli veri yok\n"
+        except Exception as e:
+            body += f"⚠️ #{index} Veri alınırken hata: {str(e)}\n"
 
     print(body)
-    #send_email(subject, body)
+    send_email(subject, body)
+
 
 def bist_karsilastirma():
     tz = pytz.timezone('Europe/Istanbul')
@@ -605,12 +624,12 @@ def bist_karsilastirma():
 #bist_by_time()
 #bist30_change()
 #halka_arz()
-#currency_send()
+currency_send()
 #silver()
 #random_stock()
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
 #sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
-bist_karsilastirma() #SAAT BELİRLENECEK
+#bist_karsilastirma() #SAAT BELİRLENECEK
 
 
 while True:
