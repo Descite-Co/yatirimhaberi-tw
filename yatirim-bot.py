@@ -1,4 +1,4 @@
-import http.client, json, smtplib, time, requests, yfinance as yf, random, matplotlib.pyplot as plt, pytz; from datetime import datetime, timedelta; from email.mime.image import MIMEImage; from email.mime.text import MIMEText; from email.mime.multipart import MIMEMultipart; from bs4 import BeautifulSoup; from io import BytesIO; from data.stocks import stocks; from data.hisse_listesi import hisse_listesi; from data.cryptos import cryptos; from config import email, password
+import http.client, json, smtplib, time, requests, yfinance as yf, random, matplotlib.pyplot as plt, pytz; from datetime import datetime, timedelta; from email.mime.image import MIMEImage; from email.mime.text import MIMEText; from email.mime.multipart import MIMEMultipart; from bs4 import BeautifulSoup; from io import BytesIO; from data.stocks import stocks; from data.hisse_listesi import hisse_listesi; from data.cryptos import cryptos; from data.config import email, password
 
 
 
@@ -75,16 +75,6 @@ def random_stock():
     send_email(subject, email_body, image_stream)
     #print(email_body)
 
-def get_data_sil(url):
-    headers = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
-    }
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return None
 
 def get_data_cur(url):
     headers = {
@@ -283,7 +273,7 @@ def format_price(price):
 
 def silver():
     # Gümüş verilerini al
-    json_data = get_data_sil('https://api.genelpara.com/embed/para-birimleri.json')
+    json_data = get_data_cur('https://api.genelpara.com/embed/para-birimleri.json')
 
     # E-posta için içerik oluştur
     if json_data:
@@ -314,7 +304,7 @@ def silver():
 
 
             # E-posta gönder
-            send_email("Güncel Gümüş Fiyatları", email_body)
+            send_email("Güncel Gümüş Fiyatları", email_body,)
             #print(email_body)
 
         else:
@@ -629,12 +619,12 @@ def bist_karsilastirma():
 #get_gold_price_and_send_email()
 #send_bist_open()
 #send_bist_close()
-print_crypto_data(cryptos)   
+#print_crypto_data(cryptos)   
 #bist_by_time()
 #bist30_change()
 #halka_arz()
-#currency_send()
-#silver()
+currency_send()
+silver()
 #random_stock()
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
 #sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
