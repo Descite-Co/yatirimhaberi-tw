@@ -2,15 +2,9 @@ import http.client, json, smtplib, time, requests, yfinance as yf, random, matpl
 
 
 
-def duzenle(deger, para):
-    if deger != 0 and isinstance(deger, int):
-        return "{:,.0f} {}".format(deger, para).replace(",", ".")
-    elif deger != 0 and isinstance(deger, float):
-        return "{:,.2f} {}".format(deger, para).replace(",", ".")
-    else:
-        return ''
-
+# CRYPTO FUNCTIONS
 def plot_bitcoin_graph():
+
     # Retrieve historical data for Bitcoin
     btc = yf.Ticker("BTC-USD")
     btc_data = btc.history(period="1mo")  # adjust the period as needed
@@ -30,7 +24,49 @@ def plot_bitcoin_graph():
     plt.savefig(image_buffer, format='png')
     image_buffer.seek(0)  # rewind to the beginning of the file
     return image_buffer
+def get_crypto_price(url):
 
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.text.strip()
+    else:
+        print(f"{url} adresine yapılan istek başarısız oldu. Hata kodu:", response.status_code)
+        return None
+def format_price(price):
+    return "{:,.2f}".format(float(price))
+def format_market_cap(market_cap):
+    if market_cap < 1_000_000:
+        return f"${market_cap:,.0f}"
+    elif market_cap < 1_000_000_000:
+        return f"${market_cap / 1_000_000:.2f} Milyon"
+    elif market_cap < 1_000_000_000_000:
+        return f"${market_cap / 1_000_000_000:.2f} Milyar"
+    else:
+        return f"${market_cap / 1_000_000_000_000:.2f} Trilyon"
+def print_crypto_data(cryptos):
+    body = "🚀 Anlık Kripto Verileri 🚀\n"
+    for crypto, urls in cryptos.items():
+        price = get_crypto_price(urls[0])
+        market_cap = get_crypto_price(urls[1])
+        if price is not None and market_cap is not None:
+            body += f"\n🌟 #{crypto} Fiyatı: ${format_price(price)}\n"
+            body += f"💰 #{crypto} Piyasa Değeri: {format_market_cap(float(market_cap))}\n"
+        else:
+            print(f"\n🚫 {crypto} verileri alınamadı.")
+
+    # Generate the Bitcoin graph and attach it to the email
+    image_buffer = plot_bitcoin_graph()
+    send_email("Anlık Kripto Verileri #crypto ##crypto", body, image_buffer)
+
+
+def duzenle(deger, para):
+    if deger != 0 and isinstance(deger, int):
+        return "{:,.0f} {}".format(deger, para).replace(",", ".")
+    elif deger != 0 and isinstance(deger, float):
+        return "{:,.2f} {}".format(deger, para).replace(",", ".")
+    else:
+        return ''
+    
 def random_stock():
     secilen_hisse = random.choice(hisse_listesi)
     hisse = yf.Ticker(secilen_hisse)
@@ -260,16 +296,9 @@ def send_bist_close():
     send_email(subject, body)
     #print(body)
 
-def get_crypto_price(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.text.strip()
-    else:
-        print(f"{url} adresine yapılan istek başarısız oldu. Hata kodu:", response.status_code)
-        return None
 
-def format_price(price):
-    return "{:,.2f}".format(float(price))
+
+
 
 def silver():
     # Gümüş verilerini al
@@ -312,30 +341,9 @@ def silver():
     else:
         print("Veri alınamadı.")
 
-def format_market_cap(market_cap):
-    if market_cap < 1_000_000:
-        return f"${market_cap:,.0f}"
-    elif market_cap < 1_000_000_000:
-        return f"${market_cap / 1_000_000:.2f} Milyon"
-    elif market_cap < 1_000_000_000_000:
-        return f"${market_cap / 1_000_000_000:.2f} Milyar"
-    else:
-        return f"${market_cap / 1_000_000_000_000:.2f} Trilyon"
 
-def print_crypto_data(cryptos):
-    body = "🚀 Anlık Kripto Verileri 🚀\n"
-    for crypto, urls in cryptos.items():
-        price = get_crypto_price(urls[0])
-        market_cap = get_crypto_price(urls[1])
-        if price is not None and market_cap is not None:
-            body += f"\n🌟 #{crypto} Fiyatı: ${format_price(price)}\n"
-            body += f"💰 #{crypto} Piyasa Değeri: {format_market_cap(float(market_cap))}\n"
-        else:
-            print(f"\n🚫 {crypto} verileri alınamadı.")
 
-    # Generate the Bitcoin graph and attach it to the email
-    image_buffer = plot_bitcoin_graph()
-    send_email("Anlık Kripto Verileri #crypto ##crypto", body, image_buffer)
+
 
 def bist_by_time():
     
