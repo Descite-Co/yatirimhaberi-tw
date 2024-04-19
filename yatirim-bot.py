@@ -58,15 +58,14 @@ def print_crypto_data(cryptos):
     image_buffer = plot_bitcoin_graph()
     send_email("Anlık Kripto Verileri #crypto ##crypto", body, image_buffer)
 
-
+# Uzun Dönem Performans Random Stock
 def duzenle(deger, para):
     if deger != 0 and isinstance(deger, int):
         return "{:,.0f} {}".format(deger, para).replace(",", ".")
     elif deger != 0 and isinstance(deger, float):
         return "{:,.2f} {}".format(deger, para).replace(",", ".")
     else:
-        return ''
-    
+        return ''   
 def random_stock():
     secilen_hisse = random.choice(hisse_listesi)
     hisse = yf.Ticker(secilen_hisse)
@@ -111,7 +110,80 @@ def random_stock():
     send_email(subject, email_body, image_stream)
     #print(email_body)
 
+# BIST OPEN AND CLOSE
+def send_bist_open():
+    tz = pytz.timezone('Europe/Istanbul')
+    today_date = datetime.now(tz)
+    day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day
+    month = today_date.strftime("%B")
+    turkish_month = {
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }[month]
+    xu100 = yf.Ticker('XU100.IS')    
+    xu100_open = xu100.info.get('open', '')
+    xu100_last_close = xu100.info.get('previousClose', '')
+    xu100_change = (((xu100_open - xu100_last_close) / xu100_last_close) * 100)
+    xu100_change = round(xu100_change, 2)
+    emo = '📈' if xu100_change > 0 else '📉'
+    text = 'yükseliş' if xu100_change > 0 else 'düşüş'
+    subject = ("send_bist100_open")
+    body = f"""🔴 #BIST100 {day} {turkish_month} tarihinde güne %{xu100_change} {text} ile başladı.
 
+{emo} Açılış Fiyatı: {xu100_open} \n
+    """
+    send_email(subject, body)
+    #print(body)
+def send_bist_close():
+    tz = pytz.timezone('Europe/Istanbul')
+    today_date = datetime.now(tz)
+    day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day
+    month = today_date.strftime("%B")
+    turkish_month = {
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }[month]
+    xu100 = yf.Ticker('XU100.IS')
+    xu100_data = xu100.history(period='max')
+    xu100_current = xu100_data['Close'][-1]
+    xu100_prev = xu100_data['Close'][-2]
+    xu100_current_change = (((xu100_current - xu100_prev) / xu100_prev) * 100)
+    xu100_current_change = round(xu100_current_change, 2)
+    emo = '📈' if xu100_current_change > 0 else '📉'
+    text = 'yükseliş' if xu100_current_change > 0 else 'düşüş'
+    subject = ("send_bist100_open")
+    body = f"""🔴 #BIST100 {day} {turkish_month} tarihinde günü %{xu100_current_change} {text} ile kapattı.
+
+{emo} Kapanış Fiyatı: {xu100_current} \n
+    """
+
+    send_email(subject, body)
+    #print(body)
+
+
+# DÖVİZ KURLARI VE SILVER
 def get_data_cur(url):
     headers = {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -122,7 +194,6 @@ def get_data_cur(url):
         return response.json()
     else:
         return None
-
 def currency_send():
     # Döviz kurlarını al
     json_data = get_data_cur('https://api.genelpara.com/embed/para-birimleri.json')
@@ -141,6 +212,46 @@ def currency_send():
         send_email("Güncel Döviz Kurları", email_body)
     else:
         print("Döviz kurları alınamadı.")
+def silver():
+    # Gümüş verilerini al
+    json_data = get_data_cur('https://api.genelpara.com/embed/para-birimleri.json')
+
+    # E-posta için içerik oluştur
+    if json_data:
+        data = json_data.get('GAG')
+        if data:
+            email_body = "🔴 #Gümüş:\n"
+            email_body += f'Fiyat: ₺{data["satis"]}\nDeğişim: {data["degisim"]}%\n'
+
+
+            silver = yf.Ticker('SI=F')
+            hist_data = silver.history(period='max')
+
+            # Plot historical prices
+            plt.figure(figsize=(12, 6))
+            plt.plot(hist_data['Close'])
+            plt.title('Gümüş Grafiği')
+            plt.xlabel('Tarih')
+            plt.ylabel('Fiyat')
+            plt.grid(False)
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+
+
+            # Save the plot as a BytesIO object
+            image_stream = BytesIO()
+            plt.savefig(image_stream, format='png')  # Save the plot as PNG image to the BytesIO object
+            image_stream.seek(0)
+
+
+            # E-posta gönder
+            send_email("Güncel Gümüş Fiyatları", email_body,)
+            #print(email_body)
+
+        else:
+            print('Gümüş verisi bulunamadı.')
+    else:
+        print("Veri alınamadı.")
 
 def send_email(subject, body, image_stream=None):
     server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
@@ -223,124 +334,6 @@ def get_gold_price_and_send_email():
 
     send_email(subject, body)
     #print(body)
-
-def send_bist_open():
-    tz = pytz.timezone('Europe/Istanbul')
-    today_date = datetime.now(tz)
-    day = today_date.strftime("%d")
-    day = day[1:] if day.startswith('0') else day
-    month = today_date.strftime("%B")
-    turkish_month = {
-        "January": "Ocak",
-        "February": "Şubat",
-        "March": "Mart",
-        "April": "Nisan",
-        "May": "Mayıs",
-        "June": "Haziran",
-        "July": "Temmuz",
-        "August": "Ağustos",
-        "September": "Eylül",
-        "October": "Ekim",
-        "November": "Kasım",
-        "December": "Aralık"
-    }[month]
-    xu100 = yf.Ticker('XU100.IS')    
-    xu100_open = xu100.info.get('open', '')
-    xu100_last_close = xu100.info.get('previousClose', '')
-    xu100_change = (((xu100_open - xu100_last_close) / xu100_last_close) * 100)
-    xu100_change = round(xu100_change, 2)
-    emo = '📈' if xu100_change > 0 else '📉'
-    text = 'yükseliş' if xu100_change > 0 else 'düşüş'
-    subject = ("send_bist100_open")
-    body = f"""🔴 #BIST100 {day} {turkish_month} tarihinde güne %{xu100_change} {text} ile başladı.
-
-{emo} Açılış Fiyatı: {xu100_open} \n
-    """
-    send_email(subject, body)
-    #print(body)
-
-def send_bist_close():
-    tz = pytz.timezone('Europe/Istanbul')
-    today_date = datetime.now(tz)
-    day = today_date.strftime("%d")
-    day = day[1:] if day.startswith('0') else day
-    month = today_date.strftime("%B")
-    turkish_month = {
-        "January": "Ocak",
-        "February": "Şubat",
-        "March": "Mart",
-        "April": "Nisan",
-        "May": "Mayıs",
-        "June": "Haziran",
-        "July": "Temmuz",
-        "August": "Ağustos",
-        "September": "Eylül",
-        "October": "Ekim",
-        "November": "Kasım",
-        "December": "Aralık"
-    }[month]
-    xu100 = yf.Ticker('XU100.IS')
-    xu100_data = xu100.history(period='max')
-    xu100_current = xu100_data['Close'][-1]
-    xu100_prev = xu100_data['Close'][-2]
-    xu100_current_change = (((xu100_current - xu100_prev) / xu100_prev) * 100)
-    xu100_current_change = round(xu100_current_change, 2)
-    emo = '📈' if xu100_current_change > 0 else '📉'
-    text = 'yükseliş' if xu100_current_change > 0 else 'düşüş'
-    subject = ("send_bist100_open")
-    body = f"""🔴 #BIST100 {day} {turkish_month} tarihinde günü %{xu100_current_change} {text} ile kapattı.
-
-{emo} Kapanış Fiyatı: {xu100_current} \n
-    """
-
-    send_email(subject, body)
-    #print(body)
-
-
-
-
-
-def silver():
-    # Gümüş verilerini al
-    json_data = get_data_cur('https://api.genelpara.com/embed/para-birimleri.json')
-
-    # E-posta için içerik oluştur
-    if json_data:
-        data = json_data.get('GAG')
-        if data:
-            email_body = "🔴 #Gümüş:\n"
-            email_body += f'Fiyat: ₺{data["satis"]}\nDeğişim: {data["degisim"]}%\n'
-
-
-            silver = yf.Ticker('SI=F')
-            hist_data = silver.history(period='max')
-
-            # Plot historical prices
-            plt.figure(figsize=(12, 6))
-            plt.plot(hist_data['Close'])
-            plt.title('Gümüş Grafiği')
-            plt.xlabel('Tarih')
-            plt.ylabel('Fiyat')
-            plt.grid(False)
-            plt.xticks(rotation=45)
-            plt.tight_layout()
-
-
-            # Save the plot as a BytesIO object
-            image_stream = BytesIO()
-            plt.savefig(image_stream, format='png')  # Save the plot as PNG image to the BytesIO object
-            image_stream.seek(0)
-
-
-            # E-posta gönder
-            send_email("Güncel Gümüş Fiyatları", email_body,)
-            #print(email_body)
-
-        else:
-            print('Gümüş verisi bulunamadı.')
-    else:
-        print("Veri alınamadı.")
-
 
 
 
@@ -543,36 +536,27 @@ def sektor_endeks_bilgi(start, end):
 def bist_karsilastirma():
     tz = pytz.timezone('Europe/Istanbul')
     today_date = datetime.now(tz)
-    day = today_date.strftime("%d")
-    day = day[1:] if day.startswith('0') else day
+    day = today_date.strftime("%d").lstrip('0')
     month = today_date.strftime("%B")
     turkish_month = {
-        "January": "Ocak",
-        "February": "Şubat",
-        "March": "Mart",
-        "April": "Nisan",
-        "May": "Mayıs",
-        "June": "Haziran",
-        "July": "Temmuz",
-        "August": "Ağustos",
-        "September": "Eylül",
-        "October": "Ekim",
-        "November": "Kasım",
-        "December": "Aralık"
+        "January": "Ocak", "February": "Şubat", "March": "Mart", "April": "Nisan",
+        "May": "Mayıs", "June": "Haziran", "July": "Temmuz", "August": "Ağustos",
+        "September": "Eylül", "October": "Ekim", "November": "Kasım", "December": "Aralık"
     }[month]
+
     xu100 = yf.Ticker('XU100.IS')
     xu100_data = xu100.history(period='max')
-    xu100_current = xu100_data['Close'][-1]
-    xu100_prev = xu100_data['Close'][-2]
+    xu100_current = xu100_data['Close'].iloc[-1]
+    xu100_prev = xu100_data['Close'].iloc[-2]
     xu100_current_change = (((xu100_current - xu100_prev) / xu100_prev) * 100)
     xu100_current = round(xu100_current, 2)
     xu100_current_change = round(xu100_current_change, 2)
-    emo100 = '📈' if xu100_current_change > 0 else '📉'    
+    emo100 = '📈' if xu100_current_change > 0 else '📉'
 
     xu30 = yf.Ticker('XU030.IS')
     xu30_data = xu30.history(period='max')
-    xu30_current = xu30_data['Close'][-1]
-    xu30_prev = xu30_data['Close'][-2]
+    xu30_current = xu30_data['Close'].iloc[-1]
+    xu30_prev = xu30_data['Close'].iloc[-2]
     xu30_current_change = (((xu30_current - xu30_prev) / xu30_prev) * 100)
     xu30_current = round(xu30_current, 2)
     xu30_current_change = round(xu30_current_change, 2)
@@ -580,47 +564,37 @@ def bist_karsilastirma():
 
     end_date = datetime.now().strftime('%Y-%m-%d')
     start_date = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
-
-    # Download historical stock data for the last year
     stock_data1 = yf.download('XU030.IS', start=start_date, end=end_date)
     stock_data2 = yf.download('XU100.IS', start=start_date, end=end_date)
 
-    # Plot historical prices
     plt.figure(figsize=(12, 6))
-    plt.plot(stock_data1['Close'])
-    plt.plot(stock_data2['Close'])
-    y_min = min(stock_data1['Close'].min(), stock_data2['Close'].min())
-    y_max = max(stock_data1['Close'].max(), stock_data2['Close'].max())
-    y_ticks = range(int(y_min), int(y_max) + 1, 500)
-    plt.text(stock_data1.index[-1], stock_data1['Close'][-1], 'XU030.IS', verticalalignment='bottom', horizontalalignment='right', color='blue', fontsize=12)
-    plt.text(stock_data2.index[-1], stock_data2['Close'][-1], 'XU100.IS', verticalalignment='bottom', horizontalalignment='right', color='orange', fontsize=12)
-    plt.yticks(y_ticks)
-    plt.title('BIST30 - BIST100 Değişim Grafiği')
+    plt.plot(stock_data1['Close'], label='XU030.IS', color='blue')
+    plt.plot(stock_data2['Close'], label='XU100.IS', color='orange')
+    plt.legend()
+    plt.title('BIST100 - BIST30 Karşılaştırması')
     plt.xlabel('Tarih')
-    plt.ylabel('Fiyat')
-    plt.grid(False)
-    plt.xticks(rotation=45)
+    plt.ylabel('Fiyat (TL)')
+    plt.grid(True)
     plt.tight_layout()
 
-    # Save the plot as a BytesIO object
+    # Save the plot
     image_stream = BytesIO()
-    plt.savefig(image_stream, format='png')  # Save the plot as PNG image to the BytesIO object
+    plt.savefig(image_stream, format='png')
     image_stream.seek(0)
 
-    subject = ("bist_karsilastirma")
+    subject = "BIST100 - BIST30 Karşılaştırması #crypto ##crypto"
     body = f"""🔴 BIST100 - BIST30 Karşılaştırması 👇
 
 #BIST30
-💸 Anlık Fİyat: {xu30_current}
+💸 Anlık Fiyat: {xu30_current} TL
 {emo30} Günlük Değişim: %{xu30_current_change}
 
 #BIST100
-💸 Anlık Fiyat: {xu100_current}
+💸 Anlık Fiyat: {xu100_current} TL
 {emo100} Günlük Değişim: %{xu100_current_change}
     """
-
-    send_email(subject, body)
-    #print(body)
+    # Ensure your email sending functionality is correctly configured
+    send_email(subject, body, image_stream)
 
 # İlk çalıştırma
 
@@ -631,12 +605,12 @@ def bist_karsilastirma():
 #bist_by_time()
 #bist30_change()
 #halka_arz()
-currency_send()
-silver()
+#currency_send()
+#silver()
 #random_stock()
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
 #sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
-#bist_karsilastirma() #SAAT BELİRLENECEK
+bist_karsilastirma() #SAAT BELİRLENECEK
 
 
 while True:
