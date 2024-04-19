@@ -1,6 +1,72 @@
 import http.client, json, smtplib, time, requests, yfinance as yf, random, matplotlib.pyplot as plt, pytz; from datetime import datetime, timedelta; from email.mime.image import MIMEImage; from email.mime.text import MIMEText; from email.mime.multipart import MIMEMultipart; from bs4 import BeautifulSoup; from io import BytesIO; from data.stocks import stocks; from data.hisse_listesi import hisse_listesi; from data.cryptos import cryptos; from data.config import email, password
 
 
+def send_email(subject, body, image_stream=None):
+    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+    server.login(email, password)
+
+    msg = MIMEMultipart()
+    msg['From'] = email
+    msg['To'] = 'trigger@applet.ifttt.com'  # Change to the desired recipient
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Attach image if present
+    if image_stream:
+        image = MIMEImage(image_stream.getvalue())
+        image.add_header('Content-Disposition', 'attachment', filename='bitcoin_price.png')
+        msg.attach(image)
+
+    server.send_message(msg)
+    server.quit()
+
+def format_currency(price, currency):
+    if isinstance(price, str):
+        return price
+    else:
+        return f"{price:.2f} {currency}"
+
+def get_commodity_info(ticker, display_name):
+    commodity = yf.Ticker(ticker)
+    commodity_info = commodity.info
+    currency = commodity_info.get("financialCurrency", "USD")
+
+    email_body = f"🛢️{display_name} güncel ve uzun dönemli performansı 👇\n\n"
+    current_price = commodity_info.get('regularMarketPrice', (commodity_info.get('open', 0) + commodity_info.get('dayHigh', 0)) / 2)
+    email_body += f"Anlık Fiyat: {format_currency(current_price, currency)}\n"
+    email_body += f"52 Haftalık En Yüksek Değer: {format_currency(commodity_info.get('fiftyTwoWeekHigh', 0), currency)}\n"
+    email_body += f"52 Haftalık En Düşük Değer: {format_currency(commodity_info.get('fiftyTwoWeekLow', 0), currency)}\n"
+    return commodity_info, email_body
+
+def plot_commodity_prices(historical_data, commodity_info, display_name):
+    plt.figure(figsize=(12, 6))
+    plt.plot(historical_data['Close'])
+    plt.title(f'{display_name} Değişim Grafiği')
+    plt.xlabel('Tarih')
+    plt.ylabel('Fiyat')
+    plt.xticks(rotation=45)
+    plt.grid(True)
+    plt.tight_layout()
+    image_stream = BytesIO()
+    plt.savefig(image_stream, format='png')
+    image_stream.seek(0)
+    return image_stream
+
+def send_info_by_email(ticker, display_name):
+    commodity_info, email_body = get_commodity_info(ticker, display_name)
+    historical_data = yf.download(ticker, start=(datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d'), end=datetime.now().strftime('%Y-%m-%d'))
+    image_stream = plot_commodity_prices(historical_data, commodity_info, display_name)
+    # E-posta gönderme işlemi için doğru fonksiyon adını kullan
+    send_email(f'Emtia Güncellemesi: {display_name} #crypto', email_body, image_stream)
+
+
+# Calling each function to send emails
+send_info_by_email('CL=F', 'Ham Petrol')  # Crude Oil
+send_info_by_email('HO=F', 'Kalorifer Yakıtı')  # Heating Oil
+send_info_by_email('NG=F', 'Doğal Gaz')  # Natural Gas
+
+
 
 # CRYPTO FUNCTIONS
 def plot_bitcoin_graph():
@@ -55,8 +121,8 @@ def print_crypto_data(cryptos):
             print(f"\n🚫 {crypto} verileri alınamadı.")
 
     # Generate the Bitcoin graph and attach it to the email
-    image_buffer = plot_bitcoin_graph()
-    send_email("Anlık Kripto Verileri #crypto ##crypto", body, image_buffer)
+    image_stream = plot_bitcoin_graph()
+    send_email("Anlık Kripto Verileri #crypto ##crypto", body, image_stream)
 
 # Uzun Dönem Performans Random Stock
 def duzenle(deger, para):
@@ -272,25 +338,7 @@ def silver():
     else:
         print("Veri alınamadı.")
 
-def send_email(subject, body, image_stream=None):
-    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    server.login(email, password)
 
-    msg = MIMEMultipart()
-    msg['From'] = email
-    msg['To'] = 'trigger@applet.ifttt.com'  # Change to the desired recipient
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(body, 'plain'))
-
-    # Attach image if present
-    if image_stream:
-        image = MIMEImage(image_stream.getvalue())
-        image.add_header('Content-Disposition', 'attachment', filename='bitcoin_price.png')
-        msg.attach(image)
-
-    server.send_message(msg)
-    server.quit()
 
 def get_gold_price_and_send_email():
     # Altın verilerini alma işlemi
@@ -326,7 +374,7 @@ def get_gold_price_and_send_email():
     }[month]
 
     gold = yf.Ticker('GC=F')
-    hist_data = gold.history(period='max')
+    hist_data = gold.history(period='1y')
 
     # Plot historical prices
     plt.figure(figsize=(12, 6))
@@ -345,16 +393,14 @@ def get_gold_price_and_send_email():
     image_stream.seek(0)
 
     # E-posta oluşturma işlemi
-    subject = f"🔴 Altın Fiyatları {day} {turkish_month}"
+    subject = f"🔴 Altın Fiyatları {day} {turkish_month} #crypto"
     body = "🔴 Altın Fiyatları:\n\n"
     for item in parsed_data["result"]:
         if item["name"] in ["Gram Altın", "ONS Altın", "Çeyrek Altın"]:
             body += f"💰 {item['name']}: Alış - {item['buying']}, Satış - {item['selling']}\n"
 
-    send_email(subject, body)
+    send_email(subject, body, image_stream)
     #print(body)
-
-
 
 
 def bist_by_time():
@@ -624,13 +670,12 @@ def bist_karsilastirma():
 #bist_by_time()
 #bist30_change()
 #halka_arz()
-currency_send()
+#currency_send()
 #silver()
 #random_stock()
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
 #sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
 #bist_karsilastirma() #SAAT BELİRLENECEK
-
 
 while True:
     tz = pytz.timezone('Europe/Istanbul')
