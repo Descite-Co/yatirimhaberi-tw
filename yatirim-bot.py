@@ -1,10 +1,6 @@
-from email.mime.image import MIMEImage; import http.client, json, smtplib, time, requests, yfinance as yf, random, matplotlib.pyplot as plt, pytz; from datetime import datetime, timedelta; from email.mime.text import MIMEText; from email.mime.multipart import MIMEMultipart; from bs4 import BeautifulSoup; from io import BytesIO
-from data.stocks import stocks
-from data.hisse_listesi import hisse_listesi
+import http.client, json, smtplib, time, requests, yfinance as yf, random, matplotlib.pyplot as plt, pytz; from datetime import datetime, timedelta; from email.mime.image import MIMEImage; from email.mime.text import MIMEText; from email.mime.multipart import MIMEMultipart; from bs4 import BeautifulSoup; from io import BytesIO; from data.stocks import stocks; from data.hisse_listesi import hisse_listesi; from data.cryptos import cryptos; from config import email, password
 
-# SMTP ayararını buraya al
-email = 'omerddduran@gmail.com'
-password = 'qbfl udxd kjya tpiv'
+
 
 def duzenle(deger, para):
     if deger != 0 and isinstance(deger, int):
@@ -100,12 +96,6 @@ def get_data_cur(url):
         return response.json()
     else:
         return None
-
-cryptos = {
-    "BTC": ["https://cryptoprices.cc/BTC/", "https://cryptoprices.cc/BTC/MCAP/"],
-    "ETH": ["https://cryptoprices.cc/ETH/", "https://cryptoprices.cc/ETH/MCAP/"],
-    "SOL": ["https://cryptoprices.cc/SOL/", "https://cryptoprices.cc/SOL/MCAP/"],
-}
 
 def currency_send():
     # Döviz kurlarını al
@@ -639,7 +629,7 @@ def bist_karsilastirma():
 #get_gold_price_and_send_email()
 #send_bist_open()
 #send_bist_close()
-#print_crypto_data(cryptos)   
+print_crypto_data(cryptos)   
 #bist_by_time()
 #bist30_change()
 #halka_arz()
