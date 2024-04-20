@@ -390,7 +390,6 @@ def get_gold_price_and_send_email():
     send_email(subject, body, image_stream)
     #print(body)
 
-
 def bist_by_time():
     
     chosen_stock = random.choice(stocks)
@@ -654,7 +653,7 @@ def bist_karsilastirma():
 #send_bist_open()
 #send_bist_close()
 #print_crypto_data(cryptos)   
-bist_by_time()
+#bist_by_time()
 #bist30_change()
 #halka_arz()
 #currency_send()
