@@ -486,51 +486,46 @@ def bist30_change():
     #print(body)
     send_email(subject, body)
 
-def halka_arz ():
+def halka_arz():
+    """
+    Fetches stock data for specified stocks, computes the daily change, and sends an email with the summarized table of performance.
+    """
+    # Timezone and date formatting
     tz = pytz.timezone('Europe/Istanbul')
-    today_date = datetime.now(tz)
-    day = today_date.strftime("%d")
-    day = day[1:] if day.startswith('0') else day # BUNU HER DAY KULLANILAN YERDE KULLANALIM
-    month = today_date.strftime("%B")
+    today_date = datetime.now(tz).strftime("%-d %B")  # %-d removes leading zero in day
     turkish_month = {
-        "January": "Ocak",
-        "February": "Şubat",
-        "March": "Mart",
-        "April": "Nisan",
-        "May": "Mayıs",
-        "June": "Haziran",
-        "July": "Temmuz",
-        "August": "Ağustos",
-        "September": "Eylül",
-        "October": "Ekim",
-        "November": "Kasım",
-        "December": "Aralık"
-    }[month]
+        "January": "Ocak", "February": "Şubat", "March": "Mart", "April": "Nisan",
+        "May": "Mayıs", "June": "Haziran", "July": "Temmuz", "August": "Ağustos",
+        "September": "Eylül", "October": "Ekim", "November": "Kasım", "December": "Aralık"
+    }
+    month = today_date.split()[1]
+    today_date = today_date.split()[0] + ' ' + turkish_month[month]
+
     stocks = ['ENTRA', 'ODINE', 'MOGAN', 'ARTMS', 'ALVES', "LMKDC"]
-    change_rates = []
-    stock_prices = []
-    subject = ("halka_arz_tablosu")
-    body = f"""🔴 {day} {turkish_month} Halka Arz Tablosu \n
-"""
+    subject = "halka_arz_tablosu #test"
+    body = f"🔴 {today_date} Halka Arz Tablosu \n\n"
+
     for stock in stocks[::-1]:
-        stock_code = stock + '.IS'
-        hisse = yf.Ticker(stock_code)
-        hisse_data = hisse.history(period='max')
-        hisse_current = hisse_data['Close'][-1]
-        hisse_prev = hisse_data['Close'][-2]
-        hisse_current_change = (((hisse_current - hisse_prev) / hisse_prev) * 100)
-        hisse_current_change = round(hisse_current_change, 2)
-        change_rates.append(hisse_current_change)
-        stock_prices.append(hisse_current)
-        emo = '📈' if hisse_current_change > 0 else '📉'
-        text = 'yükseldi' if hisse_current_change > 0 else 'düştü'
-        tavan_check = " - Hisse Tavanda" if hisse_current_change > 9.5 else ""
-        message = f"{emo} #{stock} bugün %{hisse_current_change} {text}"
-        body += f"{message + tavan_check}\n"
+        try:
+            stock_code = f'{stock}.IS'
+            hisse = yf.Ticker(stock_code)
+            hisse_data = hisse.history(period='1d')  # Fetching only needed data
+            if len(hisse_data['Close']) >= 2:
+                hisse_current = hisse_data['Close'].iloc[-1]
+                hisse_prev = hisse_data['Close'].iloc[-2]
+                hisse_current_change = ((hisse_current - hisse_prev) / hisse_prev) * 100
+                hisse_current_change = round(hisse_current_change, 2)
+                emo = '📈' if hisse_current_change > 0 else '📉'
+                text = 'yükseldi' if hisse_current_change > 0 else 'düştü'
+                tavan_check = " - Hisse Tavanda" if hisse_current_change > 9.5 else ""
+                message = f"{emo} #{stock} bugün %{hisse_current_change} {text}{tavan_check}\n"
+                body += message
+            else:
+                body += f"📊 #{stock} not enough data for analysis today.\n"
+        except Exception as e:
+            body += f"Error retrieving data for {stock}: {e}\n"
 
-    #print(body)
     send_email(subject, body)
-
 
 def sektor_hisse_bilgi(sektor):
     stocks = {
@@ -623,7 +618,7 @@ def bist_karsilastirma():
     plt.plot(stock_data2['Close'], label='XU100.IS', color='orange')
     plt.legend()
     plt.title('BIST100 - BIST30 Karşılaştırması')
-    plt.xlabel('Tarih')
+    plt.xlabel('')
     plt.ylabel('Fiyat (TL)')
     plt.grid(True)
     plt.tight_layout()
@@ -651,7 +646,6 @@ def bist_karsilastirma():
 
 
 
-#halka_arz()
 
 
 
@@ -661,7 +655,9 @@ def bist_karsilastirma():
 
 
 
-bist30_change()
+#halka_arz()
+
+#bist30_change()
 #bist_by_time()
 #send_bist_open()
 #send_bist_close()
@@ -677,6 +673,11 @@ bist30_change()
 while True:
     tz = pytz.timezone('Europe/Istanbul')
     now = datetime.now(tz)
+
+    if now.weekday() < 5 and now.hour == 10 and now.minute == 20:
+        halka_arz()
+        time.sleep(120)
+        continue
 
     if now.weekday() < 5 and now.hour == 20 and now.minute == 30:
         bist30_change()
@@ -716,8 +717,6 @@ while True:
         send_bist_open()
         time.sleep(120)
         continue
-
-
 
     if now.weekday() < 5 and now.hour == 12 and now.minute == 30:
         currency_send()
