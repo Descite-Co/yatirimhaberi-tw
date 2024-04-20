@@ -33,18 +33,17 @@ def get_commodity_info(ticker, display_name):
     commodity_info = commodity.info
     currency = commodity_info.get("financialCurrency", "USD")
 
-    email_body = f"🛢️{display_name} güncel ve uzun dönemli performansı 👇\n\n"
+    email_body = f"🔴 {display_name} güncel ve uzun dönemli performansı 👇\n\n"
     current_price = commodity_info.get('regularMarketPrice', (commodity_info.get('open', 0) + commodity_info.get('dayHigh', 0)) / 2)
-    email_body += f"Anlık Fiyat: {format_currency(current_price, currency)}\n"
-    email_body += f"52 Haftalık En Yüksek Değer: {format_currency(commodity_info.get('fiftyTwoWeekHigh', 0), currency)}\n"
-    email_body += f"52 Haftalık En Düşük Değer: {format_currency(commodity_info.get('fiftyTwoWeekLow', 0), currency)}\n"
+    email_body += f"▪️ Anlık Fiyat: {format_currency(current_price, currency)}\n"
+    email_body += f"▪️ 52 Haftalık En Yüksek Değer: {format_currency(commodity_info.get('fiftyTwoWeekHigh', 0), currency)}\n"
+    email_body += f"▪️ 52 Haftalık En Düşük Değer: {format_currency(commodity_info.get('fiftyTwoWeekLow', 0), currency)}\n"
     return commodity_info, email_body
 def plot_commodity_prices(historical_data, commodity_info, display_name):
     plt.figure(figsize=(12, 6))
     plt.plot(historical_data['Close'])
     plt.title(f'{display_name} Değişim Grafiği')
-    plt.xlabel('Tarih')
-    plt.ylabel('Fiyat')
+    plt.ylabel('Fiyat Dolar')
     plt.xticks(rotation=45)
     plt.grid(True)
     plt.tight_layout()
@@ -70,10 +69,10 @@ def plot_bitcoin_graph():
     plt.figure(figsize=(10, 5))
     plt.plot(btc_data['Close'], label='Son Fiyat')
     plt.title('Bitcoin Aylık Grafik')
-    plt.xlabel('Tarih')
     plt.ylabel('Dolar')
     plt.legend()
     plt.grid(True)
+    plt.xticks(rotation=45)
     plt.tight_layout()
 
     # Save the plot to a BytesIO buffer
@@ -131,11 +130,10 @@ def random_stock():
 
     email_body = f"📈#{secilen_hisse} {hisse_bilgileri['shortName']} hisse senedinin güncel ve uzun dönemli performansı 👇\n\n"
     anlik_fiyat = hisse_bilgileri.get('regularMarketPrice', (hisse_bilgileri.get('open', 0) + hisse_bilgileri.get('dayHigh', 0)) / 2)
-    email_body += f"Anlık Fiyat: {duzenle(anlik_fiyat if anlik_fiyat != 0 else '', currency)}\n"
-    email_body += f"52 Haftalık En Yüksek Değer: {duzenle(hisse_bilgileri.get('fiftyTwoWeekHigh', 0), currency)}\n"
-    email_body += f"Günlük İşlem Hacmi: {duzenle(hisse_bilgileri.get('volume', 'hisse'), currency)}\n"
-    email_body += f"Ortalama Günlük İşlem Hacmi (Son 10 Gün): {duzenle(hisse_bilgileri.get('averageDailyVolume10Day', 'hisse'), currency)}\n"
-    email_body += f"Piyasa Değeri: {duzenle(hisse_bilgileri.get('marketCap', 0), currency)}\n"
+    email_body += f"▪️ Anlık Fiyat: {duzenle(anlik_fiyat if anlik_fiyat != 0 else '', currency)}\n"
+    email_body += f"▪️ 52 Haftalık En Yüksek Değer: {duzenle(hisse_bilgileri.get('fiftyTwoWeekHigh', 0), currency)}\n"
+    email_body += f"▪️ Ortalama Günlük İşlem Hacmi (Son 10 Gün): {duzenle(hisse_bilgileri.get('averageDailyVolume10Day', 'hisse'), currency)}\n"
+    email_body += f"▪️ Piyasa Değeri: {duzenle(hisse_bilgileri.get('marketCap', 0), currency)}\n"
 
     end_date = datetime.now().strftime('%Y-%m-%d')
     start_date = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
@@ -145,17 +143,17 @@ def random_stock():
 
     # Plot historical prices
     plt.figure(figsize=(12, 6))
-    plt.plot(stock_data1['Close'])
+    plt.plot(stock_data1['Close'], label='Son Fiyat')
     y_min = stock_data1['Close'].min()
     y_max = stock_data1['Close'].max()
-    y_ticks = range(int(y_min), int(y_max) + 1, 5)
+    y_ticks = range(int(y_min), int(y_max) + 1, 10)
     plt.yticks(y_ticks)
     plt.title(f'{hisse_bilgileri["shortName"]} Değişim Grafiği ')
-    plt.xlabel('Tarih')
     plt.ylabel('Fiyat')
-    plt.grid(False)
+    plt.grid(True)
     plt.xticks(rotation=45)
     plt.tight_layout()
+    plt.legend()
 
     # Save the plot as a BytesIO object
     image_stream = BytesIO()
@@ -271,8 +269,8 @@ def currency_send():
         # Plot historical prices
         plt.figure(figsize=(10, 5))
         plt.plot(btc_data['Close'], label='Son Fiyat')
-        plt.title('Dolar TL Aylık Grafik')
-        plt.xlabel('Tarih')
+        plt.title('Dolar TL 3 Aylık Grafik')
+        plt.xlabel('')
         plt.ylabel('TL')
         plt.legend()
         plt.grid(True)
@@ -303,11 +301,12 @@ def silver():
 
             # Plot historical prices
             plt.figure(figsize=(12, 6))
-            plt.plot(hist_data['Close'])
-            plt.title('Gümüş Grafiği')
-            plt.xlabel('Tarih')
+            plt.plot(hist_data['Close'], label='Son Fiyat')
+            plt.title('Gümüş Dolar Grafiği')
+            plt.xlabel('')
             plt.ylabel('Fiyat')
-            plt.grid(False)
+            plt.grid(True)
+            plt.legend()
             plt.xticks(rotation=45)
             plt.tight_layout()
 
@@ -319,7 +318,7 @@ def silver():
 
 
             # E-posta gönder
-            send_email("Güncel Gümüş Fiyatları", email_body,)
+            send_email("Güncel Gümüş Fiyatları #crypto", email_body, image_stream)
             #print(email_body)
 
         else:
@@ -366,11 +365,11 @@ def get_gold_price_and_send_email():
 
     # Plot historical prices
     plt.figure(figsize=(12, 6))
-    plt.plot(hist_data['Close'])
+    plt.plot(hist_data['Close'], label='Son Fiyat')
+    plt.legend()
     plt.title('Ons Altın Grafiği')
-    plt.xlabel('Tarih')
-    plt.ylabel('Fiyat')
-    plt.grid(False)
+    plt.ylabel('Fiyat Dolar')
+    plt.grid(True)
     plt.xticks(rotation=45)
     plt.tight_layout()
 
@@ -420,11 +419,12 @@ def bist_by_time():
 
     # Plot historical prices
     plt.figure(figsize=(12, 6))
-    plt.plot(hist_data['Close'])
+    plt.plot(hist_data['Close'], label='Son Fiyat')
     plt.title(f'{chosen_stock} Hisse Senedi Grafiği')
-    plt.xlabel('Tarih')
+    plt.xlabel('')
     plt.ylabel('Fiyat')
     plt.grid(True)
+    plt.legend()
     plt.xticks(rotation=45)
     plt.tight_layout()
 
@@ -477,7 +477,7 @@ def bist30_change():
     hisse_current_change = round(hisse_current_change, 2)
     emo = '📈' if hisse_current_change > 0 else '📉'
     text = 'yükseldi' if hisse_current_change > 0 else 'düştü'
-    subject = ("send_bist30_stock")
+    subject = ("send_bist30_stock #test ##test")
     body = f"""🔴 #{chosen_stock} bugün %{hisse_current_change} {text}
 
 {emo} Anlık Fiyatı: {hisse_current} \n
@@ -649,19 +649,27 @@ def bist_karsilastirma():
 
 # İlk çalıştırma
 
-#get_gold_price_and_send_email()
-#send_bist_open()
-#send_bist_close()
-#print_crypto_data(cryptos)   
-#bist_by_time()
-#bist30_change()
+
+
 #halka_arz()
-#currency_send()
-#silver()
-#random_stock()
+
+
+
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
 #sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
 #bist_karsilastirma() #SAAT BELİRLENECEK
+
+
+
+bist30_change()
+#bist_by_time()
+#send_bist_open()
+#send_bist_close()
+#currency_send()
+#silver()
+#get_gold_price_and_send_email()
+#random_stock()
+#print_crypto_data(cryptos)   
 #send_info_by_email('CL=F', 'Ham Petrol')  # Crude Oil
 #send_info_by_email('HO=F', 'Kalorifer Yakıtı')  # Heating Oil
 #send_info_by_email('NG=F', 'Doğal Gaz')  # Natural Gas
@@ -670,89 +678,99 @@ while True:
     tz = pytz.timezone('Europe/Istanbul')
     now = datetime.now(tz)
 
-    if now.weekday() < 5 and now.hour == 11 and now.minute == 00:
-        silver()
+    if now.weekday() < 5 and now.hour == 20 and now.minute == 30:
+        bist30_change()
         time.sleep(120)
         continue
 
     if now.weekday() < 5 and now.hour == 16 and now.minute == 00:
-        silver()
+        bist30_change()
         time.sleep(120)
         continue
 
-    if now.weekday() < 7 and now.hour == 9 and now.minute == 00:
-        print_crypto_data(cryptos)
+    if now.weekday() < 5 and now.hour == 19 and now.minute == 30:
+        bist30_change()
         time.sleep(120)
         continue
 
-    if now.weekday() < 7 and now.hour == 19 and now.minute == 00:
-        print_crypto_data(cryptos)
-        time.sleep(120)
-        continue
-
-
-    if now.weekday() < 5 and now.hour == 10 and now.minute == 30:
-        currency_send()
-        time.sleep(120)
-        continue
-
-    if now.weekday() < 5 and now.hour == 17 and now.minute == 30:
-        currency_send()
-        time.sleep(120)
-        continue
-
-    if now.weekday() < 5 and now.hour == 11 and now.minute == 30:
-        get_gold_price_and_send_email()
-        time.sleep(120)
-        continue
-
-    if now.weekday() < 5 and now.hour == 17 and now.minute == 30:
-        get_gold_price_and_send_email()
-        time.sleep(120) 
-        continue
-
-    if now.weekday() < 5 and now.hour == 10 and now.minute == 15:
-        send_bist_open()
-        time.sleep(120) 
-        continue
-
-    if now.weekday() < 5 and now.hour == 18 and now.minute == 15:
-        send_bist_close()
-        time.sleep(120)
-        continue
-
-    if now.weekday() < 7 and now.hour == 9 and now.minute == 30:
+    if now.weekday() < 7 and now.hour == 11 and now.minute == 00:
         bist_by_time()
         time.sleep(120)
         continue
-
     if now.weekday() < 7 and now.hour == 15 and now.minute == 00:
         bist_by_time()
         time.sleep(120)
         continue
 
-    if now.weekday() < 7 and now.hour == 18 and now.minute == 30:
+    if now.weekday() < 7 and now.hour == 19 and now.minute == 00:
         bist_by_time()
-        time.sleep(120)    
+        time.sleep(120)
         continue
 
-    if now.weekday() < 5 and now.hour == 11 and now.minute == 35:
-        bist30_change()
+    if now.weekday() < 5 and now.hour == 10 and now.minute == 17:
+        send_bist_open()
+        time.sleep(120)
+        continue
+
+    if now.weekday() < 5 and now.hour == 18 and now.minute == 17:
+        send_bist_open()
+        time.sleep(120)
+        continue
+
+
+
+    if now.weekday() < 5 and now.hour == 12 and now.minute == 30:
+        currency_send()
+        time.sleep(120)
+        continue
+
+    if now.weekday() < 5 and now.hour == 11 and now.minute == 30:
+        silver()
+        time.sleep(120)
+        continue
+
+    if now.weekday() < 5 and now.hour == 10 and now.minute == 30:
+        get_gold_price_and_send_email()
+        time.sleep(120)
+        continue
+
+    if now.weekday() < 5 and now.hour == 16 and now.minute == 30:
+        get_gold_price_and_send_email()
+        time.sleep(120)
+        continue
+
+    if now.weekday() < 7 and now.hour == 17 and now.minute == 30:
+        random_stock()
+        time.sleep(120)
+        continue
+
+    if now.weekday() < 7 and now.hour == 23 and now.minute == 49:
+        random_stock()
+        time.sleep(120)
+        continue
+
+    if now.weekday() < 7 and now.hour == 6 and now.minute == 30:
+        print_crypto_data(cryptos)
+        time.sleep(120)
+        continue
+
+    if now.weekday() < 7 and now.hour == 18 and now.minute == 00:
+        print_crypto_data(cryptos)
         time.sleep(120)
         continue
 
     if now.weekday() < 5 and now.hour == 13 and now.minute == 30:
-        bist30_change()
+        send_info_by_email('NG=F', 'Doğal Gaz')
         time.sleep(120)
-        continue   
-
-    if now.weekday() < 5 and now.hour == 17 and now.minute == 00:
-        bist30_change()
-        time.sleep(120)  
-        continue    
+        continue
+    
+    if now.weekday() < 5 and now.hour == 23 and now.minute == 30:
+        send_info_by_email('HO=F', 'Kalorifer Yakıtı')
+        time.sleep(120)
+        continue
 
     if now.weekday() < 5 and now.hour == 20 and now.minute == 00:
-        halka_arz()
+        send_info_by_email('CL=F', 'Ham Petrol')
         time.sleep(120)
         continue
 
