@@ -21,12 +21,13 @@ def send_email(subject, body, image_stream=None):
     server.send_message(msg)
     server.quit()
 
+
+# EMTİA FONKSİYONLARI
 def format_currency(price, currency):
     if isinstance(price, str):
         return price
     else:
         return f"{price:.2f} {currency}"
-
 def get_commodity_info(ticker, display_name):
     commodity = yf.Ticker(ticker)
     commodity_info = commodity.info
@@ -38,7 +39,6 @@ def get_commodity_info(ticker, display_name):
     email_body += f"52 Haftalık En Yüksek Değer: {format_currency(commodity_info.get('fiftyTwoWeekHigh', 0), currency)}\n"
     email_body += f"52 Haftalık En Düşük Değer: {format_currency(commodity_info.get('fiftyTwoWeekLow', 0), currency)}\n"
     return commodity_info, email_body
-
 def plot_commodity_prices(historical_data, commodity_info, display_name):
     plt.figure(figsize=(12, 6))
     plt.plot(historical_data['Close'])
@@ -52,21 +52,12 @@ def plot_commodity_prices(historical_data, commodity_info, display_name):
     plt.savefig(image_stream, format='png')
     image_stream.seek(0)
     return image_stream
-
 def send_info_by_email(ticker, display_name):
     commodity_info, email_body = get_commodity_info(ticker, display_name)
     historical_data = yf.download(ticker, start=(datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d'), end=datetime.now().strftime('%Y-%m-%d'))
     image_stream = plot_commodity_prices(historical_data, commodity_info, display_name)
     # E-posta gönderme işlemi için doğru fonksiyon adını kullan
     send_email(f'Emtia Güncellemesi: {display_name} #crypto', email_body, image_stream)
-
-
-# Calling each function to send emails
-send_info_by_email('CL=F', 'Ham Petrol')  # Crude Oil
-send_info_by_email('HO=F', 'Kalorifer Yakıtı')  # Heating Oil
-send_info_by_email('NG=F', 'Doğal Gaz')  # Natural Gas
-
-
 
 # CRYPTO FUNCTIONS
 def plot_bitcoin_graph():
@@ -248,7 +239,6 @@ def send_bist_close():
     send_email(subject, body)
     #print(body)
 
-
 # DÖVİZ KURLARI VE SILVER
 def get_data_cur(url):
     headers = {
@@ -296,7 +286,6 @@ def currency_send():
         send_email("Güncel Döviz Kurları #crypto", email_body, image_buffer)
     else:
         print("Döviz kurları alınamadı.")
-
 def silver():
     # Gümüş verilerini al
     json_data = get_data_cur('https://api.genelpara.com/embed/para-birimleri.json')
@@ -338,8 +327,7 @@ def silver():
     else:
         print("Veri alınamadı.")
 
-
-
+# GOLD PRICE FUNCTIONS
 def get_gold_price_and_send_email():
     # Altın verilerini alma işlemi
     conn = http.client.HTTPSConnection("api.collectapi.com")
@@ -410,7 +398,7 @@ def bist_by_time():
     chosen_stock_info = yf.Ticker(stock_code)
 
     # Retrieve historical data
-    hist_data = chosen_stock_info.history(period='max')
+    hist_data = chosen_stock_info.history(period='1y')
 
     # Get the latest price
     today = chosen_stock_info.info.get('currentPrice', '0')
@@ -437,7 +425,7 @@ def bist_by_time():
     plt.title(f'{chosen_stock} Hisse Senedi Grafiği')
     plt.xlabel('Tarih')
     plt.ylabel('Fiyat')
-    plt.grid(False)
+    plt.grid(True)
     plt.xticks(rotation=45)
     plt.tight_layout()
 
@@ -454,11 +442,10 @@ def bist_by_time():
 ⬛ {month_1_date} tarihinden beri %{month_1_change_percent} {determine(month_1_change_percent)}
 ⬛ {month_6_date} tarihinden beri %{month_6_change_percent} {determine(month_6_change_percent)}
 
-#yatırım #borsa #hisse #hisseanaliz #bist #bist100 #bist30 #borsaistanbul
           """
-    subject = ("bist_by_time")
+    subject = ("bist_by_time #crypto ##crypto")
 
-    send_email(subject, body)
+    send_email(subject, body, image_stream)
 
 def bist30_change():
     chosen_stock = random.choice(stocks)
@@ -667,7 +654,7 @@ def bist_karsilastirma():
 #send_bist_open()
 #send_bist_close()
 #print_crypto_data(cryptos)   
-#bist_by_time()
+bist_by_time()
 #bist30_change()
 #halka_arz()
 #currency_send()
@@ -676,6 +663,9 @@ def bist_karsilastirma():
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
 #sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
 #bist_karsilastirma() #SAAT BELİRLENECEK
+#send_info_by_email('CL=F', 'Ham Petrol')  # Crude Oil
+#send_info_by_email('HO=F', 'Kalorifer Yakıtı')  # Heating Oil
+#send_info_by_email('NG=F', 'Doğal Gaz')  # Natural Gas
 
 while True:
     tz = pytz.timezone('Europe/Istanbul')
