@@ -648,11 +648,11 @@ def bist_karsilastirma():
 
 
 
-
+#halka_arz()
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
 #sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
 #bist_karsilastirma() #SAAT BELİRLENECEK
-#halka_arz()
+
 
 
 
