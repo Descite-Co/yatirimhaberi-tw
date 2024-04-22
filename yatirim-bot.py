@@ -652,10 +652,9 @@ def bist_karsilastirma():
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
 #sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
 #bist_karsilastirma() #SAAT BELİRLENECEK
-
-
-
 #halka_arz()
+
+
 
 #bist30_change()
 #bist_by_time()
@@ -714,7 +713,7 @@ while True:
         continue
 
     if now.weekday() < 5 and now.hour == 18 and now.minute == 17:
-        send_bist_open()
+        send_bist_close()
         time.sleep(120)
         continue
 
