@@ -112,7 +112,7 @@ def print_crypto_data(cryptos):
 
     # Generate the Bitcoin graph and attach it to the email
     image_stream = plot_bitcoin_graph()
-    send_email("Anlık Kripto Verileri #crypto ##crypto", body, image_stream)
+    send_email("Anlık Kripto Verileri #crypto ##crypto #randomstock ##random_stock", body, image_stream)
 
 # Uzun Dönem Performans Random Stock
 def duzenle(deger, para):
@@ -191,15 +191,41 @@ def send_bist_open():
     xu100_last_close = xu100.info.get('previousClose', '')
     xu100_change = (((xu100_open - xu100_last_close) / xu100_last_close) * 100)
     xu100_change = round(xu100_change, 2)
+    xu100_open = round(xu100_open, 2)
     emo = '📈' if xu100_change > 0 else '📉'
     text = 'yükseliş' if xu100_change > 0 else 'düşüş'
-    subject = ("send_bist100_open")
+    subject = ("send_bist100_open #randomstock ##randomstock #crypto ##crypto")
     body = f"""🔴 #BIST100 {day} {turkish_month} tarihinde güne %{xu100_change} {text} ile başladı.
 
 {emo} Açılış Fiyatı: {xu100_open} \n
     """
-    send_email(subject, body)
+    
+    end_date = datetime.today().strftime('%Y-%m-%d')
+    start_date = (datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d')
+    stock_data = yf.download('XU100.IS', start=start_date, end=end_date, interval='15m')
+
+    # Resample the data to 3-hour intervals and interpolate to fill missing values
+    stock_data_3h = stock_data['Close'].resample('1H').mean().interpolate(method='time')
+
+    # Plotting the graph
+    plt.figure(figsize=(12, 6))
+    plt.plot(stock_data_3h.index, stock_data_3h.values, linestyle='-')
+    plt.title('BIST 100 7-Day Graph (3-Hour Intervals)')
+    plt.xlabel('Date')
+    plt.ylabel('Price (TL)')
+    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    # Save the plot
+    image_stream = BytesIO()
+    plt.savefig(image_stream, format='png')
+    image_stream.seek(0)
+    
+    send_email(subject, body, image_stream)
     #print(body)
+    #plt.show()
+    
 def send_bist_close():
     tz = pytz.timezone('Europe/Istanbul')
     today_date = datetime.now(tz)
@@ -226,17 +252,163 @@ def send_bist_close():
     xu100_prev = xu100_data['Close'][-2]
     xu100_current_change = (((xu100_current - xu100_prev) / xu100_prev) * 100)
     xu100_current_change = round(xu100_current_change, 2)
+    xu100_current = round(xu100_current, 2)
     emo = '📈' if xu100_current_change > 0 else '📉'
     text = 'yükseliş' if xu100_current_change > 0 else 'düşüş'
-    subject = ("send_bist100_open")
+    subject = ("send_bist100_close #randomstock ##randomstock #crypto ##crypto")
     body = f"""🔴 #BIST100 {day} {turkish_month} tarihinde günü %{xu100_current_change} {text} ile kapattı.
 
 {emo} Kapanış Fiyatı: {xu100_current} \n
     """
+    
+    end_date = datetime.today().strftime('%Y-%m-%d')
+    start_date = (datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d')
+    stock_data = yf.download('XU100.IS', start=start_date, end=end_date, interval='15m')
+
+    # Resample the data to 3-hour intervals and interpolate to fill missing values
+    stock_data_3h = stock_data['Close'].resample('1H').mean().interpolate(method='time')
+
+    # Plotting the graph
+    plt.figure(figsize=(12, 6))
+    plt.plot(stock_data_3h.index, stock_data_3h.values, linestyle='-')
+    plt.title('BIST 100 7-Day Graph (3-Hour Intervals)')
+    plt.xlabel('Date')
+    plt.ylabel('Price (TL)')
+    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    # Save the plot
+    image_stream = BytesIO()
+    plt.savefig(image_stream, format='png')
+    image_stream.seek(0)
+
+    send_email(subject, body, image_stream)
+    #print(body)
+
+# ABD Borsa Açılış/Kapanış
+def us_open():
+    tz = pytz.timezone('Europe/Istanbul')
+    today_date = datetime.now(tz)
+    day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day
+    month = today_date.strftime("%B")
+    turkish_month = {
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }[month]
+    subject = ("send_us_open #test ##test")
+    body = f"""🔴 {day} {turkish_month} ABD Endeksleri Açılış Verileri 👇
+
+    """
+    nasdaq = "^IXIC"
+    nasdaq_name = "Nasdaq"
+    nasdaq_ticker = yf.Ticker(nasdaq)    
+    nasdaq_open = nasdaq_ticker.info.get('open', '')
+    nasdaq_last_close = nasdaq_ticker.info.get('previousClose', '')
+    nasdaq_change = (((nasdaq_open - nasdaq_last_close) / nasdaq_last_close) * 100)
+    nasdaq_change = round(nasdaq_change, 2)
+    nasdaq_open = round(nasdaq_open, 2)
+    nasdaq_emo = '📈' if nasdaq_change > 0 else '📉'
+    body += f"\n{nasdaq_emo} {nasdaq_name}: %{nasdaq_change}"
+    
+    sp500 = "^GSPC"
+    sp500_name = "S&P 500"
+    sp500_ticker = yf.Ticker(sp500)    
+    sp500_open = sp500_ticker.info.get('open', '')
+    sp500_last_close = sp500_ticker.info.get('previousClose', '')
+    sp500_change = (((sp500_open - sp500_last_close) / sp500_last_close) * 100)
+    sp500_change = round(sp500_change, 2)
+    sp500_open = round(sp500_open, 2)
+    sp500_emo = '📈' if sp500_change > 0 else '📉'
+    body += f"\n{sp500_emo} {sp500_name}: %{sp500_change}"
+    
+    dowjones = "^DJI"
+    dowjones_name = "Dow Jones Industrial Average"
+    dowjones_ticker = yf.Ticker(dowjones)    
+    dowjones_open = dowjones_ticker.info.get('open', '')
+    dowjones_last_close = dowjones_ticker.info.get('previousClose', '')
+    dowjones_change = (((dowjones_open - dowjones_last_close) / dowjones_last_close) * 100)
+    dowjones_change = round(dowjones_change, 2)
+    dowjones_open = round(sp500_open, 2)
+    dowjones_emo = '📈' if dowjones_change > 0 else '📉'
+    body += f"\n{dowjones_emo} {dowjones_name}: %{dowjones_change}"
+    
+    body += "\n\n#yatırım #borsa #hisse #ekonomi #nasdaq #sp500 #dowjones #amerika"
 
     send_email(subject, body)
     #print(body)
 
+
+def us_close():
+    tz = pytz.timezone('Europe/Istanbul')
+    today_date = datetime.now(tz)
+    day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day
+    month = today_date.strftime("%B")
+    turkish_month = {
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }[month]
+    subject = ("send_us_close #test ##test")
+    body = f"""🔴 {day} {turkish_month} ABD Endeksleri Kapanış Verileri 👇
+    
+    """
+    nasdaq = "^IXIC"
+    nasdaq_name = "NASDAQ"
+    nasdaq_data = yf.Ticker(nasdaq).history(period='max')
+    nasdaq_current = nasdaq_data['Close'][-1]
+    nasdaq_prev = nasdaq_data['Close'][-2]
+    nasdaq_current_change = (((nasdaq_current - nasdaq_prev) / nasdaq_prev) * 100)
+    nasdaq_current_change = round(nasdaq_current_change, 2)
+    emo_nasdaq = '📈' if nasdaq_current_change > 0 else '📉'
+    body += f"\n{emo_nasdaq} {nasdaq_name}: %{nasdaq_current_change}"
+    
+    sp500 = "^GSPC"
+    sp500_name = "S&P 500"
+    sp500_data = yf.Ticker(sp500).history(period='max')
+    sp500_current = sp500_data['Close'][-1]
+    sp500_prev = sp500_data['Close'][-2]
+    sp500_current_change = (((sp500_current - sp500_prev) / sp500_prev) * 100)
+    sp500_current_change = round(sp500_current_change, 2)
+    emo_sp500 = '📈' if sp500_current_change > 0 else '📉'
+    body += f"\n{emo_sp500} {sp500_name}: %{sp500_current_change}"
+    
+    dowjones = "^DJI"
+    dowjones_name = "Dow Jones"
+    dowjones_data = yf.Ticker(dowjones).history(period='max')
+    dowjones_current = dowjones_data['Close'][-1]
+    dowjones_prev = dowjones_data['Close'][-2]
+    dowjones_current_change = (((dowjones_current - dowjones_prev) / dowjones_prev) * 100)
+    dowjones_current_change = round(dowjones_current_change, 2)
+    emo_dowjones = '📈' if dowjones_current_change > 0 else '📉'
+    body += f"\n{emo_dowjones} {dowjones_name}: %{dowjones_current_change}"
+
+    body += "\n\n#yatırım #borsa #hisse #ekonomi #nasdaq #sp500 #dowjones #amerika"
+    
+    send_email(subject, body)
+    #print(body)
+    
 # DÖVİZ KURLARI VE SILVER
 def get_data_cur(url):
     headers = {
@@ -410,10 +582,35 @@ def bist_by_time():
 
     month_6_close = hist_data['Close'].iloc[-181]
     month_6_change_percent = (((today - month_6_close) / month_6_close) * 100).round(1)
-
-    month_1_date = hist_data.index[-31].strftime('%d/%m/%Y')
-    day_5_date = hist_data.index[-6].strftime('%d/%m/%Y')
-    month_6_date = hist_data.index[-181].strftime('%d/%m/%Y')
+    
+    turkish_month = {
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }
+    month_1_day = hist_data.index[-31].strftime('%d')
+    month_1_month = hist_data.index[-31].strftime("%B")
+    turkish_month_1 = turkish_month[month_1_month]
+    month_1_year = hist_data.index[-31].strftime('%Y')
+    
+    day_5_day = hist_data.index[-6].strftime('%d')
+    day_5_year = hist_data.index[-6].strftime('%Y')
+    day_5_month = hist_data.index[-6].strftime("%B")
+    turkish_day_5 = turkish_month[day_5_month]
+    
+    month_6_day = hist_data.index[-181].strftime('%d')
+    month_6_year = hist_data.index[-181].strftime('%Y')
+    month_6_month = hist_data.index[-181].strftime("%B")
+    turkish_month_6 = turkish_month[month_6_month]
 
     determine = lambda x: 'arttı' if x > 0 else 'azaldı'
 
@@ -437,13 +634,14 @@ def bist_by_time():
     body = f"""🔴 #{chosen_stock} Hissesinin Zamana Bağlı Performansı 👇
 
 ⬛ Güncel Fiyat: {today}
-⬛ {day_5_date} tarihinden beri %{day_5_change_percent} {determine(day_5_change_percent)}
-⬛ {month_1_date} tarihinden beri %{month_1_change_percent} {determine(month_1_change_percent)}
-⬛ {month_6_date} tarihinden beri %{month_6_change_percent} {determine(month_6_change_percent)}
+⬛ {day_5_day} {turkish_day_5} {day_5_year} tarihinden beri %{day_5_change_percent} {determine(day_5_change_percent)}.
+⬛ {month_1_day} {turkish_month_1} {month_1_year} tarihinden beri %{month_1_change_percent} {determine(month_1_change_percent)}.
+⬛ {month_6_day} {turkish_month_6} {month_6_year} tarihinden beri %{month_6_change_percent} {determine(month_6_change_percent)}.
 
           """
     subject = ("bist_by_time #crypto ##crypto")
 
+    #print(body)
     send_email(subject, body, image_stream)
 
 def bist30_change():
@@ -525,7 +723,8 @@ def halka_arz():
         except Exception as e:
             body += f"Error retrieving data for {stock}: {e}\n"
 
-    send_email(subject, body)
+    print(body)
+    #send_email(subject, body)
 
 def sektor_hisse_bilgi(sektor):
     stocks = {
@@ -644,27 +843,22 @@ def bist_karsilastirma():
 
 # İlk çalıştırma
 
-
-
-
-
 #halka_arz()
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
 #sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
 #bist_karsilastirma() #SAAT BELİRLENECEK
 
-
-
-
 #bist30_change()
 #bist_by_time()
 #send_bist_open()
 #send_bist_close()
+#us_open()
+#us_close()
 #currency_send()
 #silver()
 #get_gold_price_and_send_email()
 #random_stock()
-#print_crypto_data(cryptos)   
+#print_crypto_data(cryptos)
 #send_info_by_email('CL=F', 'Ham Petrol')  # Crude Oil
 #send_info_by_email('HO=F', 'Kalorifer Yakıtı')  # Heating Oil
 #send_info_by_email('NG=F', 'Doğal Gaz')  # Natural Gas
@@ -769,6 +963,16 @@ while True:
 
     if now.weekday() < 5 and now.hour == 20 and now.minute == 00:
         send_info_by_email('CL=F', 'Ham Petrol')
+        time.sleep(120)
+        continue
+    
+    if now.weekday() < 5 and now.hour == 16 and now.minute == 46:
+        us_open()
+        time.sleep(120)
+        continue
+    
+    if now.weekday() < 5 and now.hour == 23 and now.minute == 16:
+        us_close()
         time.sleep(120)
         continue
 
