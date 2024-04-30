@@ -684,45 +684,50 @@ def bist30_change():
     #print(body)
     send_email(subject, body)
 
-def halka_arz():
-    """
-    Fetches stock data for specified stocks, computes the daily change, and sends an email with the summarized table of performance.
-    """
-    # Timezone and date formatting
+def halka_arz ():
     tz = pytz.timezone('Europe/Istanbul')
-    today_date = datetime.now(tz).strftime("%-d %B")  # %-d removes leading zero in day
+    today_date = datetime.now(tz)
+    day = today_date.strftime("%d")
+    day = day[1:] if day.startswith('0') else day # BUNU HER DAY KULLANILAN YERDE KULLANALIM
+    month = today_date.strftime("%B")
     turkish_month = {
-        "January": "Ocak", "February": "Şubat", "March": "Mart", "April": "Nisan",
-        "May": "Mayıs", "June": "Haziran", "July": "Temmuz", "August": "Ağustos",
-        "September": "Eylül", "October": "Ekim", "November": "Kasım", "December": "Aralık"
-    }
-    month = today_date.split()[1]
-    today_date = today_date.split()[0] + ' ' + turkish_month[month]
-
-    stocks = ['ENTRA', 'ODINE', 'MOGAN', 'ARTMS', 'ALVES', "LMKDC"]
-    subject = "halka_arz_tablosu #test"
-    body = f"🔴 {today_date} Halka Arz Tablosu \n\n"
-
+        "January": "Ocak",
+        "February": "Şubat",
+        "March": "Mart",
+        "April": "Nisan",
+        "May": "Mayıs",
+        "June": "Haziran",
+        "July": "Temmuz",
+        "August": "Ağustos",
+        "September": "Eylül",
+        "October": "Ekim",
+        "November": "Kasım",
+        "December": "Aralık"
+    }[month]
+    stocks = ['RGYAS', 'ODINE', 'MOGAN', 'ARTMS', 'ALVES', 'LMKDC']
+    change_rates = []
+    stock_prices = []
+    subject = ("halka_arz_tablosu #test ##test")
+    body = f"""🔴 {day} {turkish_month} Halka Arz Tablosu \n
+"""
     for stock in stocks[::-1]:
-        try:
-            stock_code = f'{stock}.IS'
-            hisse = yf.Ticker(stock_code)
-            hisse_data = hisse.history(period='1d')  # Fetching only needed data
-            if len(hisse_data['Close']) >= 2:
-                hisse_current = hisse_data['Close'].iloc[-1]
-                hisse_prev = hisse_data['Close'].iloc[-2]
-                hisse_current_change = ((hisse_current - hisse_prev) / hisse_prev) * 100
-                hisse_current_change = round(hisse_current_change, 2)
-                emo = '📈' if hisse_current_change > 0 else '📉'
-                text = 'yükseldi' if hisse_current_change > 0 else 'düştü'
-                tavan_check = " - Hisse Tavanda" if hisse_current_change > 9.5 else ""
-                message = f"{emo} #{stock} bugün %{hisse_current_change} {text}{tavan_check}\n"
-                body += message
-            else:
-                body += f"📊 #{stock} not enough data for analysis today.\n"
-        except Exception as e:
-            body += f"Error retrieving data for {stock}: {e}\n"
-
+        stock_code = stock + '.IS'
+        hisse = yf.Ticker(stock_code)
+        hisse_data = hisse.history(period='Max')
+        hisse_close_list = hisse_data['Close'][-3:].tolist()
+        print(hisse_close_list)
+        hisse_current = hisse_close_list[2]
+        hisse_prev = hisse_close_list[1]
+        hisse_current_change = (((hisse_current - hisse_prev) / hisse_prev) * 100)
+        hisse_current_change = round(hisse_current_change, 2)
+        change_rates.append(hisse_current_change)
+        stock_prices.append(hisse_current)
+        emo = '📈' if hisse_current_change > 0 else '📉'
+        text = 'yükseldi' if hisse_current_change > 0 else 'düştü'
+        tavan_check = " - Hisse Tavanda" if hisse_current_change > 9.5 else ""
+        message = f"{emo} #{stock} bugün %{hisse_current_change} {text}"
+        body += f"{message + tavan_check}\n"
+    
     print(body)
     #send_email(subject, body)
 
@@ -774,7 +779,7 @@ def sektor_endeks_bilgi(start, end):
         except Exception as e:
             body += f"⚠️ #{index} Veri alınırken hata: {str(e)}\n"
 
-    print(body)
+    #print(body)
     send_email(subject, body)
 
 
@@ -843,11 +848,11 @@ def bist_karsilastirma():
 
 # İlk çalıştırma
 
-#halka_arz()
 #sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
-#sektor_endeks_bilgi(0,2) #SAAT BELİRLENECEK
+#sektor_endeks_bilgi(0,26) #SAAT BELİRLENECEK
 #bist_karsilastirma() #SAAT BELİRLENECEK
 
+#halka_arz()
 #bist30_change()
 #bist_by_time()
 #send_bist_open()
