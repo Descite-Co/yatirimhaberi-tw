@@ -733,8 +733,16 @@ def halka_arz ():
 
 def sektor_hisse_bilgi(sektor):
     stocks = {
-    "Enerji": ["TCELL", "TUPRS", "TSPOR", "HALKB", "GARAN"],
-    "Banka": ["TRCAS", "BIMAS", "TKFEN", "SASA", "SISE"]
+    "Banka": ["AKBNK", "ALBRK", "GARAN", "HALKB", "ICBCT", "ISATR", "ISBTR", "ISCTR", "ISKUR", "KLNMA", "QNBFB", "SKBNK", "TSKB", "VAKBN", "YKBNK"],
+    "Aracı Kurum": ["A1CAP", "GEDIK", "GLBMD", "INFO", "ISMEN", "OSMEN", "OYYAT", "SKYMD", "TERA"],
+    "Savunma" : ["ASELS", "SDTTR"],
+    "Perakende Ticaret" : ["BIMAS", "BIZIM", "CASA", "CRFSA", "EBEBK", "GMTAS", "KIMMR", "MAVI", "MEPET", "MGROS", "MIPAZ", "SOKM", "SUWEN", "TKNSA", "VAKKO"],
+    "Bilişim" : ["ALCTL", "ARDYZ", "ARENA", "ATATP", "AZTEK", "DESPC", "DGATE", "EDATA", "ESCOM", "FONET", "FORTE", "HTTBT", "INDES", "INGRM", "KAREL", "KFEIN", 
+                  "KRONT", "LINK", "LOGO", "MANAS", "MIATK", "MOBTL", "MTRKS", "NETAS", "OBASA", "ODINE", "PAPIL", "PATEK", "PENTA", "PKART", "REEDR", "SMART", "VBTYZ"],
+    "Gayrimenkul Yatırım Ortaklığı" : ["ADGYO", "AGYO", "AKFGY", "AKMGY", "AKSGY", "ALGYO", "ASGYO", "ATAGY", "AVGYO", "AVPGY", "BASGZ", "BEGYO", "DGGYO", "DZGYO", "EKGYO",
+                                        "EYGYO", "FZLGY", "HLGYO", "IDGYO", "ISGYO", "KGYO", "KLGYO", "KRGYO", "KZBGY", "KZGYO", "MHRGY", "MRGYO", "MSGYO", "NUGYO", "OZGYO",
+                                        "OZKGY", "PAGYO", "PEGYO", "PEKGY", "PSGYO", "RYGYO", "SEGYO", "SNGYO", "SRVGY", "SURGY", "TDGYO", "TRGYO", "TSGYO", "VKGYO", "VRGYO",
+                                        "YGGYO", "YGYO", "ZRGYO"]
     }
     subject = ("sektor_hisse_bilgi #crypto ##crypto")
     body = f"""🔴 {sektor} Hisselerinin 5 Günlük Performansları 👇 
@@ -848,7 +856,7 @@ def bist_karsilastirma():
 
 # İlk çalıştırma
 
-#sektor_hisse_bilgi("Banka") #SAAT BELİRLENECEK
+#sektor_hisse_bilgi("Gayrimenkul Yatırım Ortaklığı") #SAAT BELİRLENECEK - Perakende , GYO ve Bilişimde sıkıntı çıkıyor bakıcam
 #sektor_endeks_bilgi(0,26) #SAAT BELİRLENECEK
 #bist_karsilastirma() #SAAT BELİRLENECEK
 
